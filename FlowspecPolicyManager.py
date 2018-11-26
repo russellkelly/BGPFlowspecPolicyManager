@@ -188,7 +188,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 				DataList = Data.split(",")
 				bw = int(i["value"]*8/1000/1000)
 				FlowBandwidthDict[str(DataList)]=str('('+str(bw)+' Mbps)')
-				if SortedListOfPolicyUpdates != []:					
+				if SortedListOfPolicyUpdates != []:
 					for entry in SortedListOfPolicyUpdates:
 						if entry[0] == 'discard':
 							CurrentAction = entry[0]
@@ -208,7 +208,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						try:
 							if CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth,bw):
 								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction)
-								print "Flow Already Exists and Programmed"
+								print "Flow Passed the Check (returned true) and was to be Programmed"
 								break
 							else:
 								try: ## Try adding with default policy values (pass if none)
@@ -227,7 +227,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		
 									if bw > DefaultBandwidth and DefaultBandwidth != 0 and SortedListOfPolicyUpdates.index(entry) == int(len(SortedListOfPolicyUpdates)-1) and 'None' not in CurrentAction:
 										ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction)
-										print "Checked all Policies For Flow, Doesn't exist yet, so add it"
+										print "Checked all Policies For Flow, Doesn't exist yet, so add it using Default Policy"
 										break
 								except:
 									pass
@@ -241,7 +241,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)))
 								FlowActionDict.pop(str(DataList),None)
 								ListOfFlows.remove(DataList)
-								print "No Source or Destination Port in the source or destination portlist - removing the flow"
+								print "Returned False  - No Source or Destination Port in the source or destination portlist - removing the flow"
 								break
 						except:
 							pass
@@ -366,6 +366,7 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 			print "Theres a NONE as an action so returning false"
 			return False
 		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and DestinationPortProtocol in CurrentConfiguredDestinationProtocolPortList and bw >= PolicyBandwidth:
+			print "Caught the Rule with an Exact Match on Source and Destination Port"
 			return True
 		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and str(DataList[1]) == '1' and bw >= PolicyBandwidth:
 			print "Processed ICMP Messages (don't check destination - That specific match  S & D can be caught by above rule)"
@@ -460,6 +461,7 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 def ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction):
 	try:
 		if len(ListOfFlows) == 0:
+			print DataList
 			ListOfFlows.append(DataList)
 			FlowActionDict[str(DataList)]=CurrentAction
 			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),CurrentAction)
@@ -525,9 +527,9 @@ class FindAndProgramDdosFlowsHelperClass(object):
 	def ExaBgpAnnounce(self, ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action):
 		
 		if protocol == '1':
-			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
+			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' destination-port [=' + destinationport + '] '  + action
 			r = requests.post(exabgpurl, data={'command':command})
-			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] ' + action
+			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' destination-port [=' + destinationport + '] '  + action
 			self.ActiveFlowspecRoutes.append(command)
 		else:
 			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
@@ -537,9 +539,9 @@ class FindAndProgramDdosFlowsHelperClass(object):
 	
 	def ExaBgpWithdraw(self,ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action):
 		if protocol == '1':
-			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
+			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' destination-port [=' + destinationport + '] '  + action
 			r = requests.post(exabgpurl, data={'command':command})
-			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] ' + action
+			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' destination-port [=' + destinationport + '] '  + action
 			self.ActiveFlowspecRoutes.remove(command)			
 		else:
 			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
