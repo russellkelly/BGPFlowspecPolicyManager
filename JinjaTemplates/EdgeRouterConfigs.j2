@@ -1,0 +1,18 @@
+{%- for Router in EdgeRouters %}
+
+===========================================================
+Ingress Router {{Router['RouterID']}}
+===========================================================
+
+sflow destination {{FlowspecManagerPublicIP}}
+sflow source {{Router['RouterID']}}
+
+router bgp {{Router['AS']}}
+neighbor {{FlowspecManagerPublicIP}} remote_as {{Exabgp_as.as}}
+neighbor {{FlowspecManagerPublicIP}} update-source {{Router['RouterID']}}
+neighbor {{FlowspecManagerPublicIP}} local-as {{Router['AS']}} no-prepend replace-as
+!
+address-family flow-spec ipv4
+	neighbor {{FlowspecManagerPublicIP}} activate
+   !
+{%- endfor %}

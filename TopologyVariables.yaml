@@ -1,0 +1,101 @@
+###############################################################################
+# This file defines all the customizable topology details for the App
+# Mainly, the Policy Manager IP (used in the .py files to send HTTP API),
+# the LERs, (those the Policy Manager sends the flow routes to),
+# and the local AS
+###############################################################################
+
+
+###############################################################################
+# This Exabgp section should not need to be changed.  The ip address of the
+# exabgp instance is set in the Makefile (flowspec_net), so only if you change 
+# the Makefile will you need to change this section
+###############################################################################
+
+exabgp:
+  ip_address: 192.168.1.2
+  
+###############################################################################
+# This local_as section will need to be changed to match the AS used for
+# peering between the Exabgp instance and your routers. This is the Exabgp AS
+# Exabgp_as:
+#  as: 64512
+###############################################################################
+
+Exabgp_as:
+  as: *****
+
+###############################################################################
+# This Section will need to be modified to match your Edge routers.  These
+# are the routers you will be pushing flow routes to.  Example IP and AS below.
+# Any new Edge Router needs to be added on a new line preceded by a "-"
+# For each router configure the variables for VRF redirect, IP next-hop and
+# redirec.  If the option is not available it's OK to leave blank.
+###############################################################################
+
+EdgeRouters:
+  - RouterID: ***.***.***.***
+    AS: *****
+    VRF: ***:***
+    IPNH: ***.***.***.***
+  - RouterID: ***.***.***.***
+    AS: *****
+    VRF: ***:***
+    IPNH: ***.***.***.***
+
+
+
+
+###############################################################################
+# If you are using the containerized sflow-rt and Exabgp processes then the
+# section below will not need to be changed.
+###############################################################################
+
+
+sflow_rt_ip: 127.0.0.1
+sflow_rt_port: 8008
+exabgp_ip: 127.0.0.1
+exabgp_port: 5000
+
+
+###############################################################################
+# This Section will need to be modified to match your Flowspec Topology setup.
+###############################################################################
+
+
+###############################################################################
+#  Ports and Protocols to inspect For the Policy Manager
+###############################################################################
+
+
+IPProtocol:
+  - TCP: 6
+  - UDP: 17
+  - ICMP: 1
+
+PortList:
+  - TCP=445
+  - TCP=23
+  - TCP=3389
+  - TCP=1433
+  - TCP=53
+  - TCP=62084
+  - TCP>1024
+  - TCP<1024
+  - UDP=53
+  - UDP=123
+  - UDP>1024
+  - UDP<1024
+  - ICMP Echo-Reply=0
+  - ICMP Echo-Request=8
+  - ICMP Router-Advertisement=9
+  - ICMP Router-Solicitation=9
+  - ICMP Redirect=5
+  - ICMP Dest-Unreach=3
+  - ICMP Time-Exceeded=11
+  - ICMP Time-Stamp=13
+
+
+
+  
+  

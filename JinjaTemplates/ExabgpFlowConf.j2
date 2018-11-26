@@ -1,0 +1,24 @@
+process http-api {
+      run /usr/bin/python /home/flowspec/manager/app.py;
+      encoder json;
+}
+
+{%- for Router in EdgeRouters %}
+neighbor {{Router['RouterID']}} {
+      local-address {{ exabgp.ip_address }};
+      router-id {{ exabgp.ip_address }};
+      local-as {{Exabgp_as.as}};
+      peer-as {{Router['AS']}};
+      adj-rib-out false;
+      group-updates;
+      family {
+        ipv4 flow;
+      }
+      api {
+        processes [ http-api ];
+      }
+      capability {
+        add-path send;
+      }
+}
+{%- endfor %}
