@@ -277,7 +277,6 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 								pass
 						PolicyBandwidth = DefaultBandwidth
 						if bw > DefaultBandwidth:
-							#print "got here in default"
 							if 'None' not in CurrentAction:
 								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction)
 								print "BW > default, and there is an action.  So program the flow (using local function ProgramFlowPolicies"
@@ -369,29 +368,43 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 			print "Caught the Rule with an Exact Match on Source and Destination Port"
 			return True
 		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and str(DataList[1]) == '1' and bw >= PolicyBandwidth:
-			print "Processed ICMP Messages (don't check destination - That specific match  S & D can be caught by above rule)"
+			print "Processed ICMP Flow (don't check destination - That specific match  S & D can be caught by above rule)"
 			return True
-		elif DestinationPortProtocol in CurrentConfiguredDestinationProtocolPortList and bw >= PolicyBandwidth:
+		elif DestinationPortProtocol in CurrentConfiguredDestinationProtocolPortList and bw >= PolicyBandwidth and CurrentConfiguredSourceProtocolPortList != []:
 			for entry in CurrentConfiguredSourceProtocolPortList:
 				if '>' in entry:
 					if DataList[1] == entry.split('>')[0] and DataList[3] > entry.split('>')[1]:
-						print "Specific Destination Port Match and Source is > 1024 (well known ports)"
+						print "Specific Destination Port Match and Source is explicitly > 1024 (well known ports)"
 						return True
-				if '<' in entry:
+				elif '<' in entry:
 					if DataList[1] == entry.split('<')[0] and DataList[3] < entry.split('<')[1]:
-						print "Specific Destination Port Match and Source is < 1024 (well known ports)"
+						print "Specific Destination Port Match and Source is explicitly < 1024 (well known ports)"
 						return True
-		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and bw >= PolicyBandwidth:
+				else:
+					print "Specific Destination Port (don't check Source Port - That specific match S & D can be caught by above rule)"
+					return True
+			
+		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and bw >= PolicyBandwidth and CurrentConfiguredDestinationProtocolPortList != []:
 			for entry in CurrentConfiguredDestinationProtocolPortList:
 				if '>' in entry:
 					if DataList[1] == entry.split('>')[0] and DataList[6] > entry.split('>')[1]:
-						print "Specific Source Port Match and Destination is > 1024 (well known ports)"
+						print "Specific Source Port Match and Destination is explicitly > 1024 (well known ports)"
 						return True	
-				if '<' in entry:
+				elif '<' in entry:
 					if DataList[1] == entry.split('<')[0] and DataList[6] < entry.split('<')[1]:
-						print "Specific Source Port Match and Destination is < 1024 (well known ports)"
+						print "Specific Source Port Match and Destination is explicitly < 1024 (well known ports)"
 						return True
-					
+				else:
+					print "Specific Source Port  (don't check Destination Port - That specific match S & D can be caught by above rule)"
+					return True
+				
+		elif DestinationPortProtocol in CurrentConfiguredDestinationProtocolPortList and bw >= PolicyBandwidth:
+			print "Specific Destination Port (No Source Port List at all - That specific match S & D can be caught by above rule)"
+			return True
+		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and bw >= PolicyBandwidth:
+			print "Specific Source Port  (No Destination Port List at all - That specific match S & D can be caught by above rule)"
+			return True
+		
 		elif bw >= PolicyBandwidth:
 			DestinationGreaterThanDict = {}
 			DestinationLessThanDict = {}
@@ -461,7 +474,6 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 def ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction):
 	try:
 		if len(ListOfFlows) == 0:
-			print DataList
 			ListOfFlows.append(DataList)
 			FlowActionDict[str(DataList)]=CurrentAction
 			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),CurrentAction)
