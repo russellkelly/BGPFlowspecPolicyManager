@@ -101,5 +101,39 @@ redirect
 Step 2: Run the RenderConfigFiles.py Script
 --------------------------------------------
 
+To render the exabgp.conf file and the configurations for the edge 
+routers (EdgeRouterConfigs.cfg).
+
+        python RenderConfigFiles.py
+
+The configuration snippets for the Edge routers can be implemented on the routers.  
+The script will attempt to determine the local PCs public IP address.  Check the 
+exabgp.conf 
 
 
+Step 3: Create the Container
+----------------------------
+
+To start the container (running sFlow-RT and Exabgp locally) run:
+
+        make flowspec
+
+To check if sFlow-RT is running browse to http://localhost:8008.  This view of
+the sFlow collector can be used to check that the edge routers are in fact sending
+sFlow records to the collector.
+
+A rudimentary telnet to localhost on port 5000 will connect to the Exabgp API
+
+Finally - you can ssh to the local container by running (not really required).
+
+
+        ssh flowspec@localhost -p 2022      (password is flowspec)
+
+
+Step 4: Run the Application
+----------------------------
+
+
+        python FlowspecPolicyManager.py
+       
+Thats it!
