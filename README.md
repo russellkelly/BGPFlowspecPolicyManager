@@ -63,7 +63,7 @@ EXABGP (version 4.0.10) : https://github.com/Exa-Networks/exabgp.git
 sFlow-RT : https://sflow-rt.com/download.php
 
 
-CONFIGURING AND RUNNING THE Flowspec Manager
+CONFIGURING AND RUNNING THE FLOWSPEC MANAGER
 ============================================
 
 Once the git repository has been cloned locally and the images 
@@ -137,3 +137,19 @@ Step 4: Run the Application
         python FlowspecPolicyManager.py
        
 Thats it!
+
+TROUBLESHOOTING
+===============
+
+If there is some issue with the Application container it is very easy to recreate.
+
+In the BgpFlowspecPolicyManager directory run the following:
+
+        make clean
+        
+Recreate the container:
+
+        make flowspec
+        
+Within the application there is also a reset button that clears the BGP peers, removes the 
+flow data etc.
