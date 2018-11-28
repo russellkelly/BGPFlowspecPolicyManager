@@ -539,9 +539,9 @@ class FindAndProgramDdosFlowsHelperClass(object):
 	def ExaBgpAnnounce(self, ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action):
 		
 		if protocol == '1':
-			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' destination-port [=' + destinationport + '] '  + action
+			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
 			r = requests.post(exabgpurl, data={'command':command})
-			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' destination-port [=' + destinationport + '] '  + action
+			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
 			self.ActiveFlowspecRoutes.append(command)
 		else:
 			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
@@ -551,9 +551,9 @@ class FindAndProgramDdosFlowsHelperClass(object):
 	
 	def ExaBgpWithdraw(self,ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action):
 		if protocol == '1':
-			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' destination-port [=' + destinationport + '] '  + action
+			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
 			r = requests.post(exabgpurl, data={'command':command})
-			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' destination-port [=' + destinationport + '] '  + action
+			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
 			self.ActiveFlowspecRoutes.remove(command)			
 		else:
 			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
