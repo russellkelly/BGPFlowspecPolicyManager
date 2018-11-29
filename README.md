@@ -8,6 +8,7 @@ routes on the Edge routers.
 
 <img src="FlowspecGUI.jpg" alt="Drawing"  height="300" width="750">
                Figure 1: Flowspec Policy Manager GUI
+               
 
 The flows are discovered polling sFlow-RT via the API and then programmed on the 
 edge routers using ExaBGPs API
