@@ -7,10 +7,10 @@ or flows that match configured inspection policy) and then programs the BGP Flow
 routes on the Edge routers. 
 
 <img src="FlowspecGUI.jpg" alt="Drawing"  height="300" width="750">
-Figure 1: Flowspec Policy Manager GUI
-             
 
-\n The flows are discovered polling sFlow-RT via the API and then programmed on the 
+        1: Flowspec Policy Manager GUI
+
+The flows are discovered polling sFlow-RT via the API and then programmed on the 
 edge routers using ExaBGPs API
 
 The manager can be run on a VM or a BMS, but in addition it is all dockerized
