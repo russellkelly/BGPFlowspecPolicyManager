@@ -1,5 +1,5 @@
 process http-api {
-      run /usr/bin/python /home/flowspec/manager/app.py;
+      run /usr/bin/python /home/flowspec/manager/ConfigFiles/app.py;
       encoder json;
 }
 
@@ -12,6 +12,7 @@ neighbor {{Router['RouterID']}} {
       adj-rib-out false;
       group-updates;
       family {
+        ipv4 unicast;
         ipv4 flow;
       }
       api {

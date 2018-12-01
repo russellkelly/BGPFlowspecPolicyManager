@@ -6,7 +6,7 @@ The manager uses a backend sFlow collector (sFlow-RT) and Exabgp to find DDOS fl
 or flows that match configured inspection policy) and then programs the BGP Flowspec 
 routes on the Edge routers. 
 
-<img src="FlowspecGUI.jpg" alt="Drawing"  height="300" width="750">
+<img src="ConfigFiles/FlowspecGUI.jpg" alt="Drawing"  height="300" width="750">
 
                   Figure 1: Flowspec Policy Manager GUI
 
