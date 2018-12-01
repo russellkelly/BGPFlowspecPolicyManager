@@ -8,7 +8,7 @@ build :
 flowspec-container:
 	docker network create --driver=bridge --subnet=192.168.1.0/24 flowspec-net
 	docker run -d -it --network=flowspec-net --ip=192.168.1.2 --dns=8.8.8.8 \
-	--volume `pwd`:/home/flowspec \
+	--volume `pwd`:/home/flowspec/manager \
 	-p 179:179 \
 	-p 2022:22 \
 	-p 5000:5000 \
@@ -20,7 +20,7 @@ flowspec-container:
 	docker exec flowspec-container bash /home/flowspec/sflow-rt/get-app.sh sflow-rt dashboard-example
 	docker exec flowspec-container bash /home/flowspec/sflow-rt/get-app.sh sflow-rt flow-graph
 	docker exec flowspec-container screen -dm bash /home/flowspec/sflow-rt/start.sh
-	docker exec flowspec-container screen -dm exabgp /home/flowspec/ConfigFiles/exabgp.conf
+	docker exec flowspec-container screen -dm exabgp /home/flowspec/manager/ConfigFiles/exabgp.conf
 
 
 clean:
@@ -34,4 +34,4 @@ stop:
 start:
 	docker start flowspec-container
 	docker exec flowspec-container screen -dm bash /home/flowspec/sflow-rt/start.sh
-	docker exec flowspec-container screen -dm exabgp /home/flowspec/ConfigFiles/exabgp.conf
+	docker exec flowspec-container screen -dm exabgp /home/flowspec/manager/ConfigFiles/exabgp.conf

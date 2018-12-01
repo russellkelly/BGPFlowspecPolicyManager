@@ -1,3 +1,3 @@
-python /home/flowspec/Scripts/KillPython.py
-python /home/flowspec/Scripts/RestartManager.py
-python /home/flowspec/Scripts/RestartSflowRTCollector.py
+python /home/flowspec/manager/Scripts/KillPython.py
+python /home/flowspec/manager/Scripts/RestartManager.py
+python /home/flowspec/manager/Scripts/RestartSflowRTCollector.py

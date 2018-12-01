@@ -3,7 +3,7 @@
 import os
 import sys
 from time import sleep
-path = "/home/flowspec/ConfigFiles"
+path = "/home/flowspec/manager/ConfigFiles"
 
 def main():
 	os.chdir( path )
