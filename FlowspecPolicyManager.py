@@ -13,17 +13,14 @@ import Tkinter as tk
 from ScrolledText import ScrolledText
 from Tkinter import *
 import ttk
-import jsonrpclib
 from multiprocessing import Process
 from multiprocessing import Queue
 from Queue import Empty, Full
 from multiprocessing import JoinableQueue
-from jsonrpclib import Server
 import copy
 import schedule
 import time
 import sys
-from jsonrpclib import Server
 from pprint import pprint as pp
 
 

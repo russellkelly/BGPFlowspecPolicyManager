@@ -1,0 +1,3 @@
+python KillPython.py
+python RestartManager.py
+python RestartSflowRTCollector.py
