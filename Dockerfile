@@ -63,8 +63,6 @@ WORKDIR /home/flowspec
 RUN cd /home/flowspec ; wget https://inmon.com/products/sFlow-RT/sflow-rt.tar.gz ; tar -xvzf sflow-rt.tar.gz
 
 
-WORKDIR /home/flowspec/manager
-
 
 
 EXPOSE 179
