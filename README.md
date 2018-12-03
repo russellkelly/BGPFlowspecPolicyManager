@@ -4,11 +4,7 @@ A Python Based application (with Tkinter GUI) for BGP Flowspec Flow programming.
 
 The manager uses a backend sFlow collector (sFlow-RT) and Exabgp to find DDOS flows, 
 or flows that match configured inspection policy) and then programs the BGP Flowspec 
-routes on the Edge routers. 
-
-<img src="ConfigFiles/FlowspecGUI.jpg" alt="Drawing"  height="300" width="750">
-
-                  Figure 1: Flowspec Policy Manager GUI
+routes on the Edge routers.  
 
 The flows are discovered polling sFlow-RT via the API and then programmed on the 
 edge routers using ExaBGPs API
