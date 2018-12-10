@@ -45,14 +45,12 @@ Install the following packages:
 - Python 2.7.15 (https://www.python.org/downloads/release/python-2715/)
 - Python Requests module
 - Python Pyyaml module
-- Python Jsonrpclib module
 - Python Schedule Module
 
 The commands to install on Windows (after installing Python 2.7.15) are below:
 
         python -m pip install requests
         python -m pip install pyyaml
-        python -m pip install jsonrpclib
         python -m pip install schedule
 
 Similar commands can be run in Mac OSX or Linux using brew or apt-get
@@ -125,7 +123,7 @@ sFlow records to the collector.
 
 A rudimentary telnet to localhost on port 5000 will connect to the Exabgp API
 
-Finally - you can ssh to the local container by running (not really required).
+You can ssh to the local container by running .
 
 
         ssh flowspec@localhost -p 2022      (password is flowspec)
@@ -142,6 +140,26 @@ Thats it!
 TROUBLESHOOTING
 ===============
 
+Option 1:
+---------
+
+Within the application there is also a reset button that clears the BGP peers, removes the 
+flow data etc.
+
+Option 2:
+---------
+
+There is an option to restrt the Exabgp and sflow-RT processes by running the script below.  Follow the steps below.
+
+        ssh flowspec@localhost -p 2022      (password is flowspec)
+        cd manager
+        ./RestartManager.sh 
+        
+The Manager script will need to be started afterwards.  
+
+Option 3 :
+----------
+
 If there is some issue with the Application container it is very easy to recreate.
 
 In the BgpFlowspecPolicyManager directory run the following:
@@ -152,5 +170,5 @@ Recreate the container:
 
         make flowspec
         
-Within the application there is also a reset button that clears the BGP peers, removes the 
-flow data etc.
+
+
