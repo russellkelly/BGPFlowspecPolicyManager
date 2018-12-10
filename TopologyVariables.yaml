@@ -62,6 +62,13 @@ exabgp_port: 5000
 # This Section will need to be modified to match your Flowspec Topology setup.
 ###############################################################################
 
+###############################################################################
+#  Max number of sflow entries to poll (default 4000)
+#  Poll timer for getting sflow Statistics (default 15 seconds)
+###############################################################################
+
+sflowpolltime: 15
+maxsflowentries: 4000
 
 ###############################################################################
 #  Ports and Protocols to inspect For the Policy Manager
