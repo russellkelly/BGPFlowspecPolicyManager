@@ -122,7 +122,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 	while True:
 		try:
 			ResetSignalled = ExabgpAndQueueCalls.SignalResetQueuePoll(SignalResetQueue)
-			if ResetSignalled[0] == 'RESET SIGNALLED':
+			if ResetSignalled[0] == 'RESET SIGNALED':
 				ListOfFlows = []
 				ExabgpAndQueueCalls.ResetActiveFlowspecRoutes()
 				FlowBandwidthDict = {}
@@ -982,7 +982,7 @@ class FlowspecGUI(ttk.Frame):
 		ttk.Frame.__init__(self, parent=None, style='FlowspecGUI.TFrame', borderwidth=0,relief='raised')
 		self.mainwindow = parent
 		self.mainwindow.title('BGP Flowspec Policy Manager')
-		self.mainwindow.geometry('1000x900')
+		self.mainwindow.geometry('950x900')
 
 		self.createWidgets(BG0, BG1)
 		
@@ -1829,7 +1829,7 @@ class FlowspecGUI(ttk.Frame):
 				except:
 					pass
 				try:
-					if self.DiscardFlowPolicyBandwidth == 0:
+					if self.RedirectNHFlowPolicyBandwidth == 0:
 						self.SelectBandwidthPopup(self.window)
 						pass
 					else:
