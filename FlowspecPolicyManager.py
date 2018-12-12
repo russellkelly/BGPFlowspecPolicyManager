@@ -982,7 +982,7 @@ class FlowspecGUI(ttk.Frame):
 		ttk.Frame.__init__(self, parent=None, style='FlowspecGUI.TFrame', borderwidth=0,relief='raised')
 		self.mainwindow = parent
 		self.mainwindow.title('BGP Flowspec Policy Manager')
-		self.mainwindow.geometry('950x900')
+		self.mainwindow.geometry('1000x900')
 
 		self.createWidgets(BG0, BG1)
 		
@@ -1949,7 +1949,7 @@ class FlowspecGUI(ttk.Frame):
 		return list(set(l))
 
 	def RestartPolicyManager(self):
-		SignalResetQueue.put('RESET SIGNALLED')
+		SignalResetQueue.put('RESET SIGNALED')
 		self.ClearPolicySelection()
 		self.ClearRedirectVRFPolicy()
 		self.ClearRedirectNHPolicy()
@@ -1964,7 +1964,6 @@ class FlowspecGUI(ttk.Frame):
 		print ("\n\nProgramming Sflow Collector ........\n\n\n")
 		while True:
 			try:
-				r=requests.put('http://%s:8008/flow/%s/json' % (sflowIP,'interface'),data=json.dumps(intflow))
 				r=requests.put('http://%s:8008/flow/%s/json' % (sflowIP,'ipdest'),data=json.dumps(ipflow))
 				False
 				print ("\n\nDone! ........\n\n\n")
