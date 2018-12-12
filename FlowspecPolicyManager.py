@@ -81,7 +81,7 @@ for entry in topo_vars['PortList']:
 	PortList.append(entry)
 
 ipflow = {'keys':'agent,ipprotocol,ipsource,or:tcpsourceport:udpsourceport:icmptype,inputifindex,ipdestination,or:tcpdestinationport:udpdestinationport:icmpcode', 'value':'bytes'}
-intflow = {'keys':'agent,outputifindex,mplslabels','value':'bytes','t':'4','log':True}
+
 
 
 
@@ -95,7 +95,6 @@ def ProgramSflowrt():
 		print ("\n\nProgramming Sflow Collector ........\n\n\n")
 		while True:
 			try:
-				r=requests.put('http://%s:8008/flow/%s/json' % (sflowIP,'interface'),data=json.dumps(intflow))
 				r=requests.put('http://%s:8008/flow/%s/json' % (sflowIP,'ipdest'),data=json.dumps(ipflow))
 				False
 				print ("\n\nDone! ........\n\n\n")
@@ -983,7 +982,7 @@ class FlowspecGUI(ttk.Frame):
 		ttk.Frame.__init__(self, parent=None, style='FlowspecGUI.TFrame', borderwidth=0,relief='raised')
 		self.mainwindow = parent
 		self.mainwindow.title('BGP Flowspec Policy Manager')
-		self.mainwindow.geometry('1300x900')
+		self.mainwindow.geometry('950x900')
 
 		self.createWidgets(BG0, BG1)
 		
@@ -1012,7 +1011,7 @@ class FlowspecGUI(ttk.Frame):
 		
 		# ---------------- ROW-0 ---------------#
 		
-		TitleLabel=tk.Label(self.window,font=("Verdana", 22,),background='light grey', relief='ridge',text="DDoS Flow Policy Management Using BGP Flowspec")
+		TitleLabel=tk.Label(self.window,font=("Verdana", 16),background='light grey', relief='ridge',text="DDoS Flow Policy Management Using BGP Flowspec")
 		TitleLabel.grid(row=0,columnspan=5, sticky='nswe')
 		
 		# ---------------- ROW-1 ---------------#
@@ -1020,12 +1019,12 @@ class FlowspecGUI(ttk.Frame):
 		SetBackGroundColor=tk.Label(self.window,background=BG0,text='',font=("Verdana", 12),justify='right')
 		SetBackGroundColor.grid(column=0, row=1,columnspan=5, rowspan=40,sticky='nswe')
 		
-		PolicyTitleLabel=tk.Label(self.window,font=("Verdana", 16),fg='dark blue',background=BG0,text="\n########## Default Flow Inspection Policy Bandwidth & Action Policy ###########")
+		PolicyTitleLabel=tk.Label(self.window,font=("Verdana", 12),fg='dark blue',background=BG0,text="\n########## Default Flow Inspection Policy Bandwidth & Action Policy ###########")
 		PolicyTitleLabel.grid(column=1, row=1,columnspan=3, sticky='we')
 		
 		# ---------------- ROW-2 ---------------#
 		
-		DefaultActionRuleLabel=tk.Label(self.window,background=BG0,text="Select the Default Flow Policy ",font=("Verdana", 14),justify='right',anchor='nw',)
+		DefaultActionRuleLabel=tk.Label(self.window,background=BG0,text="Select the Default Flow Policy ",font=("Verdana", 10),justify='right',anchor='nw',)
 		DefaultActionRuleLabel.grid(column=1, row=2,columnspan=3,sticky='we')
 		
 		# ---------------- ROW-3 ---------------#
@@ -1049,10 +1048,10 @@ class FlowspecGUI(ttk.Frame):
 		
 		# ---------------- ROW-4 ---------------#
 		
-		DefaultFlowPolicyBwLabel=tk.Label(self.window, background=BG0, text="Default Policy Inspection Bandwidth (Mbps): ",font=("Verdana", 14),justify='right')
+		DefaultFlowPolicyBwLabel=tk.Label(self.window, background=BG0, text="Default Policy Inspection Bandwidth (Mbps): ",font=("Verdana", 10),justify='right')
 		DefaultFlowPolicyBwLabel.grid(column=1,row=4,sticky='e',pady=10)
 		
-		self.DefaultBandwidthTextBox = tk.Text(self.window, background=BG0, height = 1, width = 40, borderwidth=1, relief="ridge",font=("Verdana",12,'italic'),fg='grey70')
+		self.DefaultBandwidthTextBox = tk.Text(self.window, background=BG0, height = 1, width = 40, borderwidth=1, relief="ridge",font=("Verdana",10,'italic'),fg='grey70')
 		self.DefaultBandwidthTextBox.insert('1.0','  (Click <enter/return> to set policy bandwidth)')
 		self.DefaultBandwidthTextBox.bind("<Button-1>", self.SetDefaultBandwidthTextBoxFocus)
 		self.DefaultBandwidthTextBox.bind("<Return>", self.GetDefaultFlowPolicyBandWidth)
@@ -1064,9 +1063,9 @@ class FlowspecGUI(ttk.Frame):
 		
 		SectionLabel=tk.Label(self.window,background=BG0,text="Program Default Policy >>>",font=("Verdana", 14,'bold'),justify='left')
 		SectionLabel.grid(column=1, columnspan=2,row=5,sticky='e',padx=120)
-		push_button0=tk.Button(self.window, text="Click Here", command=self.ProgramDefaultPolicy,font=("Verdana", 14),fg='white',bg='dark grey')
+		push_button0=tk.Button(self.window, text="Click Here", command=self.ProgramDefaultPolicy,font=("Verdana", 10),fg='white',bg='dark grey')
 		push_button0.grid(column=2, row=5,sticky='e')
-		ClearDefaultSelection=tk.Button(self.window,background=BG0, text="Clear Selections", command=self.ClearDefaultSelection,font=("Verdana", 14,'italic'))
+		ClearDefaultSelection=tk.Button(self.window,background=BG0, text="Clear Selections", command=self.ClearDefaultSelection,font=("Verdana", 10,'italic'))
 		ClearDefaultSelection.grid(column=3, row=5,sticky='w')
 		
 		# ---------------- ROW-6 ---------------#
@@ -1076,25 +1075,25 @@ class FlowspecGUI(ttk.Frame):
 		
 		# ---------------- ROW-7 ---------------#
 		
-		SectionLabel=tk.Label(self.window,background=BG0,text="Active Default Policy:",font=("Verdana", 14,'bold'),justify='left',fg='dark blue')
+		SectionLabel=tk.Label(self.window,background=BG0,text="Active Default Policy:",font=("Verdana", 12,'bold'),justify='left',fg='dark blue')
 		SectionLabel.grid(column=1, row=7,sticky='e',padx=10)
 		
-		self.DefaultBandwidthTextBoxPolicy = tk.Text(self.window,background=BG0,height = 1, width = 40, borderwidth=3, relief="raised",font=("Verdana",12))
+		self.DefaultBandwidthTextBoxPolicy = tk.Text(self.window,background=BG0,height = 1, width = 40, borderwidth=2, relief="raised",font=("Verdana",12))
 		self.DefaultBandwidthTextBoxPolicy.grid(column=2, columnspan=2,row=7,sticky='w',padx=10)
 		
-		ClearDefaultPolicy=tk.Button(self.window, background=BG0, text="Clear Default Policy",command=self.ClearDefaultPolicy,font=("Verdana", 12))
-		ClearDefaultPolicy.grid(column=3, row=7,sticky='w',padx=10)
+		ClearDefaultPolicy=tk.Button(self.window, background=BG0, text="Clear Default Policy",command=self.ClearDefaultPolicy,font=("Verdana", 10))
+		ClearDefaultPolicy.grid(column=3, row=7,sticky='w',padx=60)
 		
 		# ---------------- ROW-8 ---------------#
 		
-		PolicyTitleLabel=tk.Label(self.window,background=BG0, text='\n############ Configure Flow Inspection Policy Bandwidth, Action & Ports #############',font=("Verdana", 14,),justify='left',fg='dark blue')
+		PolicyTitleLabel=tk.Label(self.window,background=BG0, text='\n############ Configure Flow Inspection Policy Bandwidth, Action & Ports #############',font=("Verdana", 10),justify='left',fg='dark blue')
 		PolicyTitleLabel.grid(column=1, row=8,columnspan=3, sticky='we')
 		
 		
 		# ---------------- ROW-9 ---------------#
 		
 		self.selected = tk.IntVar()
-		ActionRuleLabel=tk.Label(self.window, background=BG0, text="Select the Flow Policy (Required)",font=("Verdana", 14),justify='right',anchor='nw',)
+		ActionRuleLabel=tk.Label(self.window, background=BG0, text="Select the Flow Policy (Required)",font=("Verdana", 10),justify='right',anchor='nw',)
 		ActionRuleLabel.pack()
 		ActionRuleLabel.grid(column=1, row=9,columnspan=3,sticky='nw')
 		
@@ -1118,10 +1117,10 @@ class FlowspecGUI(ttk.Frame):
 		# ---------------- ROW-11 ---------------#
 		
 		
-		FlowPolicyBwLabel=tk.Label(self.window, background=BG0, text="Flow Policy Inspection Bandwidth (Mbps): ",font=("Verdana", 14),justify='right')
+		FlowPolicyBwLabel=tk.Label(self.window, background=BG0, text="Flow Policy Inspection Bandwidth (Mbps): ",font=("Verdana", 10),justify='right')
 		FlowPolicyBwLabel.grid(column=1,row=11,sticky='e',pady=10)
 		
-		self.BandwidthTextBox = tk.Text(self.window, background=BG0, height = 1, width = 40, borderwidth=1, relief="ridge",font=("Verdana",12,'italic'),fg='grey70')
+		self.BandwidthTextBox = tk.Text(self.window, background=BG0, height = 1, width = 40, borderwidth=1, relief="ridge",font=("Verdana",10,'italic'),fg='grey70')
 		self.BandwidthTextBox.insert('1.0','  (Click <enter/return> to set policy bandwidth)')
 		self.BandwidthTextBox.bind("<Button-1>", self.SetBandwidthTextBoxFocus)
 		self.BandwidthTextBox.bind("<Return>", self.GetFlowPolicyBandWidth)
@@ -1132,34 +1131,34 @@ class FlowspecGUI(ttk.Frame):
 		
 		# ---------------- ROW-15 ---------------#
 		
-		PortListLabel=tk.Label(self.window, background=BG0, text="Select the port(s):protocols to add/remove from the list below: ",font=("Verdana", 14),justify='right',anchor='nw')
+		PortListLabel=tk.Label(self.window, background=BG0, text="Select the port(s):protocols to add/remove from the list below: ",font=("Verdana", 10),justify='right',anchor='nw')
 		PortListLabel.grid(column=1, columnspan=3,row=15,sticky='w',pady=10)
 		
 		
 		# ---------------- ROW-16 ---------------#
 		
-		SourcePortLabel=tk.Label(self.window, background=BG0, text="Select Source Ports/Protocols: ",font=("Verdana", 12,'bold'),anchor='n')
+		SourcePortLabel=tk.Label(self.window, background=BG0, text="Select Source Ports/Protocols: ",font=("Verdana", 10,'bold'),anchor='n')
 		SourcePortLabel.grid(column=1, row=16)
 		
-		DestinationPortLabel=tk.Label(self.window, background=BG0, text="Select Destination Ports/Protocols: ",font=("Verdana", 12,'bold'),anchor='n')
+		DestinationPortLabel=tk.Label(self.window, background=BG0, text="Select Destination Ports/Protocols: ",font=("Verdana", 10,'bold'),anchor='n')
 		DestinationPortLabel.grid(column=2, row=16)
 		
-		SelectPortButton = tk.Button(self.window, background=BG0,  text=" Add ", width=12, command=self.AddToPolicy,font=("Verdana",12,))
+		SelectPortButton = tk.Button(self.window, background=BG0,  text=" Add ", width=12, command=self.AddToPolicy,font=("Verdana",10))
 		SelectPortButton.grid(column=3, row=16,padx=10,sticky='w')
 		
-		RemovePortButton = tk.Button(self.window, background=BG0, text=" Remove ", width=12, command=self.RemoveFromPolicy,font=("Verdana",12,))
+		RemovePortButton = tk.Button(self.window, background=BG0, text=" Remove ", width=12, command=self.RemoveFromPolicy,font=("Verdana",10))
 		RemovePortButton.grid(column=3, row=16,padx=30,sticky='e')
 		
 		
 		self.DiscardPolicyTextBox = ScrolledText(self.window, background=BG0, height = 5, borderwidth=3,width=30, relief="sunken")
-		self.DiscardPolicyTextBox.configure(bg = 'grey95', wrap='word', fg = 'white',font=("Verdana", 12))
+		self.DiscardPolicyTextBox.configure(bg = 'grey95', wrap='word', fg = 'white',font=("Verdana", 10))
 		self.DiscardPolicyTextBox.grid(column=1, row=25,sticky='nswe',padx=10)
 		
 		# ---------------- ROW-17 ---------------#
 		
 		scrollbar = tk.Scrollbar(self.window, background=BG1,  orient="vertical")
 		scrollbar.grid(column=1, row=17,sticky='nse')
-		self.SourcePorts = tk.Listbox(self.window, background='grey95',  exportselection=0, relief = 'raised', height = 5, yscrollcommand=scrollbar.set, font=("Verdana", 12,'bold'),selectmode='multiple')
+		self.SourcePorts = tk.Listbox(self.window, background='grey95',  exportselection=0, relief = 'raised', height = 5, yscrollcommand=scrollbar.set, font=("Verdana", 10,'bold'),selectmode='multiple')
 		self.SourcePorts.grid(column=1, row=17,sticky='nswe',padx=15)
 		scrollbar.config(command=self.SourcePorts.yview)
 		
@@ -1170,7 +1169,7 @@ class FlowspecGUI(ttk.Frame):
 		
 		scrollbar1 = tk.Scrollbar(self.window, background=BG0,  orient="vertical")
 		scrollbar1.grid(column=2, row=17,sticky='nse')
-		self.DestinationPorts = tk.Listbox(self.window, background='grey95',  exportselection=0, relief = 'raised', width=30, height = 5, yscrollcommand=scrollbar1.set, font=("Verdana", 12,'bold'),selectmode='multiple')
+		self.DestinationPorts = tk.Listbox(self.window, background='grey95',  exportselection=0, relief = 'raised', width=30, height = 5, yscrollcommand=scrollbar1.set, font=("Verdana", 10,'bold'),selectmode='multiple')
 		self.DestinationPorts.place(relx = 0.5, rely = 0.5, anchor="center")
 		self.DestinationPorts.grid(column=2, row=17,sticky='nswe',padx=15)
 		scrollbar1.config(command=self.DestinationPorts.yview)
@@ -1180,16 +1179,16 @@ class FlowspecGUI(ttk.Frame):
 			
 		self.DestinationPorts.bind('<<ListboxSelect>>',self.CurDestinationSelet)
 		
-		self.PortTextBox = ScrolledText(self.window, background=BG0, width=30,height = 5, borderwidth=3, relief="raised",font=("Verdana",12,'bold'))
+		self.PortTextBox = ScrolledText(self.window, background=BG0, width=30,height = 5, borderwidth=3, relief="raised",font=("Verdana",10,'bold'))
 		self.PortTextBox.grid(column=3, row=17,sticky='nswe',padx=10)
 		
 		# ---------------- ROW-22 ---------------#
 		
 		ProgramFlowPolicyLabel=tk.Label(self.window, background=BG0, text="Program Flow Policy >>>",font=("Verdana", 14,'bold'),justify='left')
 		ProgramFlowPolicyLabel.grid(column=1, columnspan=2,row=22,sticky='e',padx=120)
-		ProgramFlowPolicyButton=tk.Button(self.window, text="Click Here", command=self.UpdateFlowspecPolicy,font=("Verdana", 14),fg='white',bg='dark grey')
+		ProgramFlowPolicyButton=tk.Button(self.window, text="Click Here", command=self.UpdateFlowspecPolicy,font=("Verdana", 12),fg='white',bg='dark grey')
 		ProgramFlowPolicyButton.grid(column=2, row=22,sticky='e')
-		ClearPolicySelection=tk.Button(self.window, background=BG0, text="Clear Selections", command=self.ClearPolicySelection,font=("Verdana", 14,'italic'))
+		ClearPolicySelection=tk.Button(self.window, background=BG0, text="Clear Selections", command=self.ClearPolicySelection,font=("Verdana", 12,'italic'))
 		ClearPolicySelection.grid(column=3, row=22,sticky='w',padx=10)
 		
 		
@@ -1201,68 +1200,68 @@ class FlowspecGUI(ttk.Frame):
 		
 		# ---------------- ROW-24 ---------------#
 		
-		DiscardPolicyLabel=tk.Label(self.window, background=BG0, text="Active Discard Policy",font=("Verdana", 14,'bold'),fg='dark blue')
+		DiscardPolicyLabel=tk.Label(self.window, background=BG0, text="Active Discard Policy",font=("Verdana", 12,'bold'),fg='dark blue')
 		DiscardPolicyLabel.grid(column=1, row=24)
 		
-		RedirectNHPolicyLabel=tk.Label(self.window, background=BG0, text="Active Redirect NH Policy: ",font=("Verdana", 14,'bold'),fg='dark blue')
+		RedirectNHPolicyLabel=tk.Label(self.window, background=BG0, text="Active Redirect NH Policy: ",font=("Verdana", 12,'bold'),fg='dark blue')
 		RedirectNHPolicyLabel.grid(column=2, row=24)
 		
-		RedirectVRFPolicyLabel=tk.Label(self.window, background=BG0, text="Active Redirect VRF Policy: ",font=("Verdana", 14,'bold'),fg='dark blue')
+		RedirectVRFPolicyLabel=tk.Label(self.window, background=BG0, text="Active Redirect VRF Policy: ",font=("Verdana", 12,'bold'),fg='dark blue')
 		RedirectVRFPolicyLabel.grid(column=3, row=24)
 		
 		
 		# ---------------- ROW-25 ---------------#
 		
-		self.DiscardPolicyTextBox = ScrolledText(self.window, background=BG0, height = 5, borderwidth=3,width=40, relief="raised")
-		self.DiscardPolicyTextBox.configure(bg = 'white', wrap='word', fg = 'white',font=("Verdana", 12,'bold'))
+		self.DiscardPolicyTextBox = ScrolledText(self.window, background=BG0, height = 5, borderwidth=3,width=20, relief="raised")
+		self.DiscardPolicyTextBox.configure(bg = 'white', wrap='word', fg = 'white',font=("Verdana", 10,'bold'))
 		self.DiscardPolicyTextBox.grid(column=1, row=25,sticky='nswe',padx=10)
 		
-		self.RedirectNHPolicyTextBox = ScrolledText(self.window, background=BG0, height = 5, borderwidth=3,width=40, relief="raised")
-		self.RedirectNHPolicyTextBox.configure(bg = 'white', wrap='word', fg = 'white',font=("Verdana", 12,'bold'))
+		self.RedirectNHPolicyTextBox = ScrolledText(self.window, background=BG0, height = 5, borderwidth=3,width=20, relief="raised")
+		self.RedirectNHPolicyTextBox.configure(bg = 'white', wrap='word', fg = 'white',font=("Verdana", 10,'bold'))
 		self.RedirectNHPolicyTextBox.grid(column=2,sticky='nswe', row=25)
 		
-		self.RedirectVRFPolicyTextBox = ScrolledText(self.window, background=BG0, height = 5, borderwidth=3,width=40, relief="raised")
-		self.RedirectVRFPolicyTextBox.configure(bg = 'white', wrap='word', fg = 'white',font=("Verdana", 12,'bold'))
+		self.RedirectVRFPolicyTextBox = ScrolledText(self.window, background=BG0, height = 5, borderwidth=3,width=20, relief="raised")
+		self.RedirectVRFPolicyTextBox.configure(bg = 'white', wrap='word', fg = 'white',font=("Verdana", 10,'bold'))
 		self.RedirectVRFPolicyTextBox.grid(column=3,sticky='nswe', row=25,padx=10)
 		
 		
 		# ---------------- ROW-29 ---------------#
 		
-		ClearDiscardPolicy=tk.Button(self.window, background=BG0,  text="Clear Discard Policy", command=self.ClearDiscardPolicy,font=("Verdana", 12,'bold'))
+		ClearDiscardPolicy=tk.Button(self.window, background=BG0,  text="Clear Discard Policy", command=self.ClearDiscardPolicy,font=("Verdana", 10,'bold'))
 		ClearDiscardPolicy.grid(column=1, row=29,sticky='we',padx=10)
-		ClearRedirectNHPolicy=tk.Button(self.window, background=BG0,  text="Clear Redirect NH Policy", command=self.ClearRedirectNHPolicy,font=("Verdana", 12,'bold'))
+		ClearRedirectNHPolicy=tk.Button(self.window, background=BG0,  text="Clear Redirect NH Policy", command=self.ClearRedirectNHPolicy,font=("Verdana", 10,'bold'))
 		ClearRedirectNHPolicy.grid(column=2, row=29,sticky='we',padx=10)
-		ClearRedirectVRFPolicy=tk.Button(self.window, background=BG0,  text="Clear Redirect VRF Policy", command=self.ClearRedirectVRFPolicy,font=("Verdana", 12,'bold'))
+		ClearRedirectVRFPolicy=tk.Button(self.window, background=BG0,  text="Clear Redirect VRF Policy", command=self.ClearRedirectVRFPolicy,font=("Verdana", 10,'bold'))
 		ClearRedirectVRFPolicy.grid(column=3, row=29,sticky='we',padx=10)
 		
 		# ---------------- ROW-31 ---------------#
 		
-		SectionLabel=tk.Label(self.window, background=BG0,text="\n###################### View Live Flow Information ###########################",font=("Verdana", 14,),justify='left',fg='dark blue')
+		SectionLabel=tk.Label(self.window, background=BG0,text="\n###################### View Live Flow Information ###########################",font=("Verdana", 10,),justify='left',fg='dark blue')
 		SectionLabel.grid(column=1, row=31,columnspan=3,sticky='we')
 		
 		# ---------------- ROW-32 ---------------#
 		
-		FlowspecRoutes=tk.Button(self.window, text="Show Flowspec Routes Click Here (Pop Up)",width=37,command=self.ShowFlowspecRoutesPopup,font=("Verdana", 14),fg='white',bg='dark grey')
+		FlowspecRoutes=tk.Button(self.window, text="Show Flowspec Routes Click Here (Pop Up)",width=37,command=self.ShowFlowspecRoutesPopup,font=("Verdana", 10),fg='white',bg='dark grey')
 		FlowspecRoutes.grid(column=1,columnspan=2,sticky='w',row=32,padx=10)
 		
-		ActiveSflow=tk.Button(self.window, text="Show Active sFlow Click Here (Pop Up)", width=37,command=self.ShowSflowPopup,font=("Verdana", 14),fg='white',bg='dark grey')
+		ActiveSflow=tk.Button(self.window, text="Show Active sFlow Click Here (Pop Up)", width=37,command=self.ShowSflowPopup,font=("Verdana", 10),fg='white',bg='dark grey')
 		ActiveSflow.grid(column=2,columnspan=2,sticky='e',row=32,padx=10)
 		
 		# ---------------- ROW-33 ---------------#
 		
-		PolicyTitleLabel=tk.Label(self.window, background=BG0,text="\n######################## Manual Flowspec Rule Push ########################",font=("Verdana", 14),justify='left',fg='dark blue')
+		PolicyTitleLabel=tk.Label(self.window, background=BG0,text="\n######################## Manual Flowspec Rule Push ########################",font=("Verdana", 10),justify='left',fg='dark blue')
 		PolicyTitleLabel.grid(column=1, row=33,columnspan=3, sticky='we')
 		
 		# ---------------- ROW-35 ---------------#
 		
 		SectionLabel=tk.Label(self.window, background=BG0, text="Program Manual Flowspec Rule >>>",font=("Verdana", 14),justify='left')
 		SectionLabel.grid(column=1, columnspan=2, row=35,sticky='e')
-		push_button0=tk.Button(self.window, text="Click Here (Pop up)", command=self.ProgramFlowSpecRule, borderwidth=3, height = 1,font=("Verdana", 14),fg='white',bg='dark grey')
+		push_button0=tk.Button(self.window, text="Click Here (Pop up)", command=self.ProgramFlowSpecRule, borderwidth=3, height = 1,font=("Verdana", 10),fg='white',bg='dark grey')
 		push_button0.grid(column=3, row=35,sticky='w')
 		
 		#---------------- ROW-36 ---------------#
 		
-		FooterLabel=tk.Label(self.window, background=BG0, text="\n##################################################################################",font=("Verdana", 14),justify='left',fg='dark blue')
+		FooterLabel=tk.Label(self.window, background=BG0, text="\n##################################################################################",font=("Verdana", 10),justify='left',fg='dark blue')
 		FooterLabel.grid(column=1, row=36,columnspan=3,sticky='we')
 		
 		
@@ -1271,7 +1270,7 @@ class FlowspecGUI(ttk.Frame):
 		QuitButton=tk.Button(self.window, text="QUIT", command=self.Quit,font=("Verdana", 18), borderwidth=3, height = 1, fg = 'white', bg = 'red')
 		QuitButton.grid(column=2,row=37,sticky='we',pady=10)
 		
-		QuitButton=tk.Button(self.window, text="RESET POLICY MANAGER", command=self.RestartPolicyManager,font=("Verdana", 14), borderwidth=3, height = 1, fg = 'white', bg = 'dark blue')
+		QuitButton=tk.Button(self.window, text="RESET POLICY MANAGER", command=self.RestartPolicyManager,font=("Verdana", 12), borderwidth=3, height = 1, fg = 'white', bg = 'dark blue')
 		QuitButton.grid(column=1,row=37,sticky='w',pady=10,padx=10)
 		
 		# Refresh Window with after call to Update the GUI for any TopologyVariables.yaml changes
@@ -1336,12 +1335,12 @@ class FlowspecGUI(ttk.Frame):
 		self.popup.geometry("+%d+%d" % (ParentWindow.winfo_rootx()+width,ParentWindow.winfo_rooty()+height))
 		self.popup.lift()
 		self.popup.title("Exiting Application")
-		self.TitleLabel=tk.Label(self.popup,text="\nYou're Exiting the App!\n\nSelect What you want to do with the BGP Peers and Flow Routes?",font=("Verdana", 14,'bold'),justify='center')
+		self.TitleLabel=tk.Label(self.popup,text="\nYou're Exiting the App!\n\nSelect What you want to do with the BGP Peers and Flow Routes?",font=("Verdana", 12,'bold'),justify='center')
 		self.TitleLabel.grid(column=0, row=1,columnspan=3, padx=30,pady=30)		
-		self.OneByOne=tk.Button(self.popup,text='Withdraw One By One',command=self.WithdrawRoutesOneByOne,font=("Verdana",12,'bold'),width=20,fg='black',bg='light grey')
+		self.OneByOne=tk.Button(self.popup,text='Withdraw One By One',command=self.WithdrawRoutesOneByOne,font=("Verdana",10,'bold'),width=20,fg='black',bg='light grey')
 		self.ResetAll=tk.Button(self.popup,text='Reset BGP Peers',command=self.HardExit,font=("Verdana",12,'bold'),width=20,fg='black',bg='light grey')
-		self.LeaveActive=tk.Button(self.popup,text='Leave Routes Active',command=self.SoftExit,font=("Verdana",12,'bold'),width=20,fg='black',bg='light grey')
-		self.close=tk.Button(self.popup,text='Cancel',command=self.popup.destroy,font=("Verdana",12,'bold'),width=20,fg='black',bg='light grey')
+		self.LeaveActive=tk.Button(self.popup,text='Leave Routes Active',command=self.SoftExit,font=("Verdana",10,'bold'),width=20,fg='black',bg='light grey')
+		self.close=tk.Button(self.popup,text='Cancel',command=self.popup.destroy,font=("Verdana",10,'bold'),width=20,fg='black',bg='light grey')
 		self.OneByOne.grid(row=2,column=0,sticky='we',padx=10)
 		self.ResetAll.grid(row=2,column=1,sticky='we',padx=10)
 		self.LeaveActive.grid(row=2,column=2,sticky='we',padx=10)
@@ -1373,14 +1372,14 @@ class FlowspecGUI(ttk.Frame):
 		'''simulate reading 200 bytes; update progress bar'''
 		self.bytes += 1
 		self.progress["value"] = self.bytes
-		self.RemovingLabel=tk.Label(self.popup,text="\nRemoving Routes....",font=("Verdana", 12),justify='center')
+		self.RemovingLabel=tk.Label(self.popup,text="\nRemoving Routes....",font=("Verdana", 10),justify='center')
 		self.RemovingLabel.grid(column=0, row=4,sticky='wn',pady=20,padx=20)
 		if self.bytes <= self.maxbytes:
 			# read more bytes after 200 ms
 			self.popup.after(200, self.read_bytes)
 		else:
 			self.RemovingLabel.destroy
-			self.DoneLabel=tk.Label(self.popup,text="\nDone!!!",font=("Verdana", 12),justify='center')
+			self.DoneLabel=tk.Label(self.popup,text="\nDone!!!",font=("Verdana", 10),justify='center')
 			self.DoneLabel.grid(column=0, row=4,sticky='en',pady=20,padx=20)
 			self.popup.after(1000,self.terminate)
 			
@@ -1404,12 +1403,12 @@ class FlowspecGUI(ttk.Frame):
 			r = requests.post(exabgpurl, data={'command': command})
 			time.sleep(.2)
 		print (" \n\n Hard Clearing the Controller BGP peering Session")
-		self.DoneLabel=tk.Label(self.popup,text="\nDone!!!",font=("Verdana", 14,'bold'),justify='center')
+		self.DoneLabel=tk.Label(self.popup,text="\nDone!!!",font=("Verdana", 12,'bold'),justify='center')
 		self.DoneLabel.grid(column=1, row=4,sticky='n',pady=20,padx=20)
 		self.popup.after(1000,self.terminate)
 		
 	def SoftExit(self):
-		self.DoneLabel=tk.Label(self.popup,text="\nClosing GUI Only!!!",font=("Verdana", 14,'bold'),justify='center')
+		self.DoneLabel=tk.Label(self.popup,text="\nClosing GUI Only!!!",font=("Verdana", 12,'bold'),justify='center')
 		self.DoneLabel.grid(column=1, row=4,sticky='n',pady=20,padx=20)
 		self.popup.after(1000,self.terminate)
 		
@@ -1436,28 +1435,28 @@ class FlowspecGUI(ttk.Frame):
 		popup = ShowSflowPopup(SflowQueue,self.window)
 
 	def ResetDefaultAction(self):
-		self.DefaultRedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-		self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-		self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+		self.DefaultRedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+		self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+		self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
 		self.DefaultDummyRad.select()
 		self.defaultaction = ''
 	
 	def SetDefaultAction(self):
 		self.defaultaction = ''
 		if self.selecteddefaultaction.get() == 1:
-			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana", 12,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.DefaultRedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.DefaultRedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
 			self.defaultaction = 'discard'
 		elif self.selecteddefaultaction.get() == 2:
-			self.DefaultRedirectIPRadLabel.configure(font=("Verdana", 12,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectIPRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
 			self.defaultaction = 'redirect next-hop'
 		elif self.selecteddefaultaction.get() == 3:
-			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana", 12,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-			self.DefaultRedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
 			self.defaultaction = 'redirect VRF'
 		elif self.selecteddefaultaction.get() == 5:
 			self.defaultaction = ''
@@ -1467,7 +1466,7 @@ class FlowspecGUI(ttk.Frame):
 		self.DefaultBandwidth = self.DefaultBandwidth.strip('\n')
 		if self.DefaultBandwidth != '':
 			self.DefaultBandwidthTextBox.delete('1.0', 'end')
-			self.DefaultBandwidthTextBox.configure(font=("Verdana",12,'bold'),fg='white')
+			self.DefaultBandwidthTextBox.configure(font=("Verdana",10,'bold'),fg='white')
 			self.DefaultBandwidthTextBox.insert('1.0','Default Flow Policy BW: ')
 			self.DefaultBandwidthTextBox.insert('insert',self.DefaultBandwidth+'  Mbps')
 			self.DefaultBandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
@@ -1481,7 +1480,7 @@ class FlowspecGUI(ttk.Frame):
 			self.ResetDefaultBandwidth()
 		elif self.DefaultBandwidth != '':
 			self.DefaultBandwidthTextBox.delete('1.0', 'end')
-			self.DefaultBandwidthTextBox.configure(font=("Verdana",12,'bold'),fg='white')
+			self.DefaultBandwidthTextBox.configure(font=("Verdana",10,'bold'),fg='white')
 			self.DefaultBandwidthTextBox.insert('1.0','Flow Policy BW: ')
 			self.DefaultBandwidthTextBox.insert('insert',str(self.DefaultBandwidth)+'  Mbps')
 			self.DefaultBandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
@@ -1493,7 +1492,7 @@ class FlowspecGUI(ttk.Frame):
 	def SetDefaultBandwidthTextBoxFocus(self, event):
 		self.DefaultBandwidthTextBox.focus_set()
 		self.DefaultBandwidthTextBox.delete('1.0','end')
-		self.DefaultBandwidthTextBox.configure(font=("Verdana",12,'bold'),fg='black')
+		self.DefaultBandwidthTextBox.configure(font=("Verdana",10,'bold'),fg='black')
 		self.DefaultBandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.DefaultBandwidthTextBox.tag_configure("boldcentered",justify='center',background='white')
 
@@ -1501,7 +1500,7 @@ class FlowspecGUI(ttk.Frame):
 		self.DefaultBandwidthTextBox.delete(1.0,'end')
 		self.DefaultBandwidthTextBox.configure(bg = 'white')
 		self.DefaultBandwidth = ''
-		self.DefaultBandwidthTextBox.configure(font=("Verdana",12,'italic'),fg='dark grey')
+		self.DefaultBandwidthTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
 		self.DefaultBandwidthTextBox.insert('1.0','(Click <enter/return> to set policy bandwidth)')
 		self.DefaultBandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.DefaultBandwidthTextBox.tag_configure("boldcentered",justify='center',background='white')
@@ -1535,7 +1534,7 @@ class FlowspecGUI(ttk.Frame):
 			for entry in self.DefaultBandwidthPolicy:
 				UpdatePolicyQueue.put(entry)
 			self.DefaultBandwidthTextBoxPolicy.delete('1.0', 'end')
-			self.DefaultBandwidthTextBoxPolicy.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 12,'bold'))
+			self.DefaultBandwidthTextBoxPolicy.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 10,'bold'))
 			self.DefaultBandwidthTextBoxPolicy.insert('end', 'Policy BW: ' +str(self.DefaultBandwidth)+ ' Mbps   Action: '+str(self.defaultaction))
 			self.DefaultBandwidthTextBoxPolicy.tag_add("centered", "1.0", 'end')
 			self.DefaultBandwidthTextBoxPolicy.tag_configure("centered",justify='center')
@@ -1563,9 +1562,9 @@ class FlowspecGUI(ttk.Frame):
 	
 
 	def ResetFlowPolicyAction(self):
-		self.RedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-		self.RedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-		self.BlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+		self.RedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+		self.RedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+		self.BlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
 		self.DummyRad.select()
 		self.action = ''
 		
@@ -1573,19 +1572,19 @@ class FlowspecGUI(ttk.Frame):
 	def SetAction(self):
 		self.action = ''
 		if self.selected.get() == 1:
-			self.BlockTrafficRadLabel.configure(font=("Verdana", 12,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.RedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-			self.RedirectVRFRadLabel.configure(font=("Verdana",12,),fg='black',bg='grey95',relief='ridge')
+			self.BlockTrafficRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.RedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.RedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
 			self.action = 'discard'
 		elif self.selected.get() == 2:
-			self.RedirectIPRadLabel.configure(font=("Verdana", 12,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.BlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-			self.RedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.RedirectIPRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.BlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.RedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
 			self.action = 'redirect next-hop'
 		elif self.selected.get() == 3:
-			self.RedirectVRFRadLabel.configure(font=("Verdana", 12,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.BlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
-			self.RedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.RedirectVRFRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.BlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.RedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
 			self.action = 'redirect VRF'
 		elif self.selected.get() == 5:
 			self.action = ''
@@ -1595,7 +1594,7 @@ class FlowspecGUI(ttk.Frame):
 		self.FlowPolicyBandwidth = self.FlowPolicyBandwidth.strip('\n')
 		if self.FlowPolicyBandwidth != '':
 			self.BandwidthTextBox.delete('1.0', 'end')
-			self.BandwidthTextBox.configure(font=("Verdana",12,'bold'),fg='white')
+			self.BandwidthTextBox.configure(font=("Verdana",10,'bold'),fg='white')
 			self.BandwidthTextBox.insert('1.0','Flow Policy BW: ')
 			self.BandwidthTextBox.insert('insert',self.FlowPolicyBandwidth+'  Mbps')
 			self.BandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
@@ -1607,7 +1606,7 @@ class FlowspecGUI(ttk.Frame):
 	def SetBandwidthTextBoxUnFocus(self, event):
 		if self.FlowPolicyBandwidth != '':
 			self.BandwidthTextBox.delete('1.0', 'end')
-			self.BandwidthTextBox.configure(font=("Verdana",12,'bold'),fg='white')
+			self.BandwidthTextBox.configure(font=("Verdana",10,'bold'),fg='white')
 			self.BandwidthTextBox.insert('1.0','Flow Policy BW: ')
 			self.BandwidthTextBox.insert('insert',self.FlowPolicyBandwidth+'  Mbps')
 			self.BandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
@@ -1619,7 +1618,7 @@ class FlowspecGUI(ttk.Frame):
 	def SetBandwidthTextBoxFocus(self, event):
 		self.BandwidthTextBox.focus_set()
 		self.BandwidthTextBox.delete('1.0','end')
-		self.BandwidthTextBox.configure(font=("Verdana",12,'bold'),fg='black')
+		self.BandwidthTextBox.configure(font=("Verdana",10,'bold'),fg='black')
 		self.BandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.BandwidthTextBox.tag_configure("boldcentered",justify='center',background='white')
 
@@ -1627,7 +1626,7 @@ class FlowspecGUI(ttk.Frame):
 		self.BandwidthTextBox.delete(1.0,'end')
 		self.BandwidthTextBox.configure(bg = 'white')
 		self.FlowPolicyBandwidth = ''
-		self.BandwidthTextBox.configure(font=("Verdana",12,'italic'),fg='dark grey')
+		self.BandwidthTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
 		self.BandwidthTextBox.insert('1.0','(Hit <enter/return> to set policy bandwidth)')
 		self.BandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.BandwidthTextBox.tag_configure("boldcentered",justify='center',background='white')
@@ -1711,9 +1710,9 @@ class FlowspecGUI(ttk.Frame):
 		self.popup.geometry("+%d+%d" % (ParentWindow.winfo_rootx()+width,ParentWindow.winfo_rooty()+height))
 		self.popup.lift()
 		self.popup.title("Missing A Policy Selection")
-		self.TitleLabel=tk.Label(self.popup,text="\nYou Must select a flow policy!\n",font=("Verdana", 14,'bold'),justify='left')
+		self.TitleLabel=tk.Label(self.popup,text="\nYou Must select a flow policy!\n",font=("Verdana", 12,'bold'),justify='left')
 		self.TitleLabel.grid(column=0, row=1,columnspan=3, padx=30,pady=30)		
-		self.close= tk.Button(self.popup,text='OK!',command=self.popup.destroy,font=("Verdana",12,'bold'))
+		self.close= tk.Button(self.popup,text='OK!',command=self.popup.destroy,font=("Verdana",10,'bold'))
 		self.close.grid(row=2,column=0,columnspan=3,pady=10)
 		
 
@@ -1724,9 +1723,9 @@ class FlowspecGUI(ttk.Frame):
 		self.popup.geometry("+%d+%d" % (ParentWindow.winfo_rootx()+width,ParentWindow.winfo_rooty()+height))
 		self.popup.lift()
 		self.popup.title("Missing A Bandwidth Value")
-		self.TitleLabel=tk.Label(self.popup,text="\nYou Didn't Enter a BW value!\n\n  You need to set a bandwidth value >0!!",font=("Verdana", 14,'bold'),justify='center')
+		self.TitleLabel=tk.Label(self.popup,text="\nYou Didn't Enter a BW value!\n\n  You need to set a bandwidth value >0!!",font=("Verdana", 12,'bold'),justify='center')
 		self.TitleLabel.grid(column=0, row=1,columnspan=3, padx=30,pady=30)		
-		self.close= tk.Button(self.popup,text='OK!',command=self.popup.destroy,font=("Verdana",12,'bold'))
+		self.close= tk.Button(self.popup,text='OK!',command=self.popup.destroy,font=("Verdana",10,'bold'))
 		self.close.grid(row=2,column=0,columnspan=3,pady=10)
 
 
@@ -1781,7 +1780,7 @@ class FlowspecGUI(ttk.Frame):
 						pass
 					else:
 						self.DiscardPolicyTextBox.delete('1.0', 'end')
-						self.DiscardPolicyTextBox.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 12,'bold'))
+						self.DiscardPolicyTextBox.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 10,'bold'))
 						DiscardPolicyList.append(float(self.DiscardFlowPolicyBandwidth))
 						self.DiscardPolicyTextBox.insert('end', 'Policy BW : '+str(self.DiscardFlowPolicyBandwidth)+' Mbps\n')
 						DiscardPolicyList.append(self.ListOfDiscardBadSourcePorts)
@@ -1835,7 +1834,7 @@ class FlowspecGUI(ttk.Frame):
 						pass
 					else:
 						self.RedirectNHPolicyTextBox.delete('1.0', 'end')
-						self.RedirectNHPolicyTextBox.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 12,'bold'))
+						self.RedirectNHPolicyTextBox.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 10,'bold'))
 						RedirectNHPolicyList.append(float(self.RedirectNHFlowPolicyBandwidth))
 						self.RedirectNHPolicyTextBox.insert('end', 'Policy BW : '+str(self.RedirectNHFlowPolicyBandwidth)+' Mbps\n')
 						RedirectNHPolicyList.append(self.ListOfRedirectNHBadSourcePorts)
@@ -1888,7 +1887,7 @@ class FlowspecGUI(ttk.Frame):
 						pass
 					else:	
 						self.RedirectVRFPolicyTextBox.delete('1.0', 'end')
-						self.RedirectVRFPolicyTextBox.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 12,'bold'))
+						self.RedirectVRFPolicyTextBox.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 10,'bold'))
 						RedirectVRFPolicyList.append(float(self.RedirectVRFFlowPolicyBandwidth))
 						self.RedirectVRFPolicyTextBox.insert('end', 'Policy BW : '+str(self.RedirectVRFFlowPolicyBandwidth)+'\n')
 						RedirectVRFPolicyList.append(self.ListOfRedirectVRFBadSourcePorts)
