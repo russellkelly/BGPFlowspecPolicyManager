@@ -379,7 +379,6 @@ def RenderTopologyVariables():
 			NHIPDict[Router['RouterID']]=Router['IPNH']
 	except:
 		pass
-	print SflowPollTime
 
 def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth, bw):
 	try:
@@ -1972,6 +1971,7 @@ class FlowspecGUI(ttk.Frame):
 			except:
 				pass
 
+
 def SendFlowsToExabgp(queue):
 	while True:
 		UpdateRoutes = []
@@ -1984,8 +1984,6 @@ def SendFlowsToExabgp(queue):
 				queue.task_done()
 			except:
 				False
-		#pp(UpdateRoutes)
-		#time.sleep(0.05)
 
 
 
