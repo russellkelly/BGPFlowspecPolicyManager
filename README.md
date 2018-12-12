@@ -6,6 +6,13 @@ The manager uses a backend sFlow collector (sFlow-RT) and Exabgp to find DDOS fl
 or flows that match configured inspection policy) and then programs the BGP Flowspec 
 routes on the Edge routers.  
 
+Below is a picture of the Flowspec UI
+
+<img src="ConfigFiles/FlowspecGUI.jpg" alt="Drawing"  height="300" width="750">
+
+        Figure 1: FlowspecPolicyManager UI
+
+
 The flows are discovered polling sFlow-RT via the API and then programmed on the 
 edge routers using ExaBGPs API
 
@@ -128,8 +135,33 @@ You can ssh to the local container by running .
 
         ssh flowspec@localhost -p 2022      (password is flowspec)
 
+Step 4: Tune Topology Varibles File (if required)
+-------------------------------------------------
 
-Step 4: Run the Application
+The topology file can be edited to chahnge the frequency sflow-RT is polled for 
+new/changed flows.  This makes the app more responsive.  Default is 15 seconds.  This
+seems to work for ~1000 flow changes per polling period.
+
+        sflowpolltime: 15
+
+The default max number of non-zerp sflow records the app will iterate through is 4000. 
+This can be changed in the topology file entry:
+
+        maxsflowentries: 4000
+
+Finally, you can add remove specific TCP UDP ports to match on.  Additionally ICMP messages
+can be added as required.  When the topology file is amended the main app will pick
+up the changes and reflect in the GUI.  Ensure the YAML formatting is correct!
+
+        PortList:
+                - TCP=445
+                - TCP=23
+                - UDP=53
+                - ICMP Echo-Reply=0
+                - ICMP Echo-Request=8
+                
+
+Step 5: Run the Application
 ----------------------------
 
 
