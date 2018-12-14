@@ -51,6 +51,7 @@ file.close()
 sflowIP=str(topo_vars['sflow_rt_ip'])
 ExabgpIP=str(topo_vars['exabgp_ip'])
 SflowPollTime=int(topo_vars['sflowpolltime'])
+RunTimer=int(topo_vars['runtimer'])
 MaxSflowEntries=str(topo_vars['maxsflowentries'])
 
 sflowrt_url = 'http://'+sflowIP+':'+str(topo_vars['sflow_rt_port'])
@@ -180,10 +181,11 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		SortedListOfPolicyUpdates = [item for item in SortedListOfPolicyUpdates if item[1] != 0]
 		
 		try:
-			MinValue = int(SortedListOfPolicyUpdates[0][1])*1000000
+			MinValue = float(SortedListOfPolicyUpdates[0][1])*1000000
 			print(MinValue)
 		except:
-			pass
+			MinValue = 1
+			print MinValue
 		if sflowcount == 0 or sflowcount == SflowPollTime:
 			print("running sflow")
 			try:
@@ -193,9 +195,9 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 				session.mount('http://', adapter)
 				session.mount('https://', adapter)
 				try:
-					r = session.get(str(sflowrt_url)+'/activeflows/ALL/ipdest/json?maxFlows='+str(MaxSflowEntries)+'&minValue=1')
+					r = session.get(str(sflowrt_url)+'/activeflows/ALL/ipdest/json?maxFlows='+str(MaxSflowEntries)+'&minValue='+str(MinValue))
 				except:
-					r = session.get(str(sflowrt_url)+'/activeflows/ALL/ipdest/json?maxFlows=4000&minValue=1')
+					pass
 			except requests.exceptions.ConnectionError:
 				r.status_code = "Connection refused"	
 			rawflows = r.json()
@@ -258,6 +260,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						try:
 							if not CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth,bw) and str(DataList) in FlowActionDict.keys() and SortedListOfPolicyUpdates.index(entry) == int(len(SortedListOfPolicyUpdates)-1):
 								print ("Returned False  - No Source or Destination Port in the source or destination portlist - removing the flow")
+								print DataList
 								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
 								FlowActionDict.pop(str(DataList),None)
 								ListOfFlows.remove(DataList)
@@ -348,8 +351,8 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		if stamp != _cached_stamp: 			# Well the TopologyVariables File Changed
 			_cached_stamp = stamp
 			RenderTopologyVariables()
-		sflowcount += 1
-		time.sleep(1)
+		sflowcount += RunTimer
+		time.sleep(RunTimer)
 		
 		
 def RenderTopologyVariables():
@@ -357,6 +360,7 @@ def RenderTopologyVariables():
 	global NHVRFDict
 	global NHIPDict
 	global SflowPollTime
+	global RunTimer
 	script_dir = os.path.dirname(__file__)
 	rel_path = "TopologyVariables.yaml"
 	abs_file_path = os.path.join(script_dir, rel_path)
@@ -366,6 +370,7 @@ def RenderTopologyVariables():
 	file.close()
 	try:
 		SflowPollTime=int(topo_vars['sflowpolltime'])
+		RunTimer=int(topo_vars['runtimer'])
 		MaxSflowEntries=str(topo_vars['maxsflowentries'])
 	except:
 		pass
@@ -567,13 +572,13 @@ class FindAndProgramDdosFlowsHelperClass(object):
 		if protocol == '1':
 			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
 			#Put in the queue for Programming
-			ExaBGPQueue.put(command)
+			ExaBGPQueue.put_nowait(command)
 			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
 			self.ActiveFlowspecRoutes.append(command)
 		else:
 			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
 			#Put in the queue for Programming
-			ExaBGPQueue.put(command)
+			ExaBGPQueue.put_nowait(command)
 			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
 			self.ActiveFlowspecRoutes.append(command)
 	
@@ -581,13 +586,13 @@ class FindAndProgramDdosFlowsHelperClass(object):
 		if protocol == '1':
 			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
 			#Put in the queue for Programming
-			ExaBGPQueue.put(command)
+			ExaBGPQueue.put_nowait(command)
 			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
 			self.ActiveFlowspecRoutes.remove(command)			
 		else:
 			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
 			#Put in the queue for Programming
-			ExaBGPQueue.put(command)
+			ExaBGPQueue.put_nowait(command)
 			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
 			self.ActiveFlowspecRoutes.remove(command)
 
@@ -1309,6 +1314,7 @@ class FlowspecGUI(ttk.Frame):
 		topo_vars['home_directory'] = os.path.dirname(os.path.realpath(__file__))
 		file.close()
 		# Update the Values in the GUI and for the route programming
+		
 		try:
 			for Router in topo_vars['EdgeRouters']:
 				NHIPDict[Router['RouterID']]=Router['IPNH']
@@ -1971,19 +1977,17 @@ class FlowspecGUI(ttk.Frame):
 			except:
 				pass
 
-
 def SendFlowsToExabgp(queue):
 	while True:
 		UpdateRoutes = []
 		while not queue.empty():
 			try:
-				msg = queue.get()         # Read from the queue
-				UpdateRoutes.append(msg)
-				r = requests.post(exabgpurl, data={'command':msg})
-				pp(msg)
-				queue.task_done()
+				command = queue.get_nowait()         # Read from the queue
+				r = requests.post(exabgpurl, data={'command':command})
 			except:
 				False
+
+		
 
 
 
@@ -1996,7 +2000,7 @@ if __name__ == '__main__':
 	
 	SflowQueue = JoinableQueue(maxsize=0)  
 	SflowQueue.cancel_join_thread()
-	ExaBGPQueue = JoinableQueue(maxsize=0)  
+	ExaBGPQueue = JoinableQueue(maxsize=0)
 	ExaBGPQueue.cancel_join_thread()
 	SignalResetQueue = JoinableQueue(maxsize=0)  
 	SignalResetQueue.cancel_join_thread()
@@ -2029,4 +2033,3 @@ if __name__ == '__main__':
 
 	SendFlowsToExabgpProcess.join()
 	FindAndProgramDdosFlowsProcess.join()
-

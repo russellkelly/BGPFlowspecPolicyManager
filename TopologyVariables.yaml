@@ -67,6 +67,7 @@ exabgp_port: 5000
 #  Poll timer for getting sflow Statistics (default 15 seconds)
 ###############################################################################
 
+runtimer: 5
 sflowpolltime: 15
 maxsflowentries: 4000
 
