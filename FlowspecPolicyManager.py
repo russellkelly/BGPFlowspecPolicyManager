@@ -50,8 +50,8 @@ file.close()
 
 sflowIP=str(topo_vars['sflow_rt_ip'])
 ExabgpIP=str(topo_vars['exabgp_ip'])
-SflowPollTime=int(topo_vars['sflowpolltime'])
-RunTimer=int(topo_vars['runtimer'])
+SflowMultiplier=int(topo_vars['SflowMultiplier'])
+AppRunTimer=int(topo_vars['AppRunTimer'])
 MaxSflowEntries=str(topo_vars['maxsflowentries'])
 
 sflowrt_url = 'http://'+sflowIP+':'+str(topo_vars['sflow_rt_port'])
@@ -182,11 +182,10 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		
 		try:
 			MinValue = float(SortedListOfPolicyUpdates[0][1])*1000000
-			print(MinValue)
 		except:
 			MinValue = 1
-			print MinValue
-		if sflowcount == 0 or sflowcount == SflowPollTime:
+
+		if sflowcount == 0 or sflowcount == (AppRunTimer*SflowMultiplier):
 			print("running sflow")
 			try:
 				session = requests.Session()
@@ -351,16 +350,16 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		if stamp != _cached_stamp: 			# Well the TopologyVariables File Changed
 			_cached_stamp = stamp
 			RenderTopologyVariables()
-		sflowcount += RunTimer
-		time.sleep(RunTimer)
+		sflowcount += AppRunTimer
+		time.sleep(AppRunTimer)
 		
 		
 def RenderTopologyVariables():
 	# Updating for the main Program
 	global NHVRFDict
 	global NHIPDict
-	global SflowPollTime
-	global RunTimer
+	global SflowMultiplier
+	global AppRunTimer
 	script_dir = os.path.dirname(__file__)
 	rel_path = "TopologyVariables.yaml"
 	abs_file_path = os.path.join(script_dir, rel_path)
@@ -369,8 +368,8 @@ def RenderTopologyVariables():
 	topo_vars['home_directory'] = os.path.dirname(os.path.realpath(__file__))
 	file.close()
 	try:
-		SflowPollTime=int(topo_vars['sflowpolltime'])
-		RunTimer=int(topo_vars['runtimer'])
+		SflowMultiplier=int(topo_vars['SflowMultiplier'])
+		AppRunTimer=int(topo_vars['AppRunTimer'])
 		MaxSflowEntries=str(topo_vars['maxsflowentries'])
 	except:
 		pass
@@ -2033,3 +2032,4 @@ if __name__ == '__main__':
 
 	SendFlowsToExabgpProcess.join()
 	FindAndProgramDdosFlowsProcess.join()
+

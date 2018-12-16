@@ -18,8 +18,9 @@ exabgp:
 ###############################################################################
 # This local_as section will need to be changed to match the AS used for
 # peering between the Exabgp instance and your routers. This is the Exabgp AS
+# Example:
 # Exabgp_as:
-#  as: 64512
+#  as: 65000
 ###############################################################################
 
 Exabgp_as:
@@ -30,7 +31,9 @@ Exabgp_as:
 # are the routers you will be pushing flow routes to.  Example IP and AS below.
 # Any new Edge Router needs to be added on a new line preceded by a "-"
 # For each router configure the variables for VRF redirect, IP next-hop and
-# redirec.  If the option is not available it's OK to leave blank.
+# redirect.  If the option is not available it's OK to leave blank for a
+# specific peer.  The Manager will not take this peer into consideration
+# when determining the FS rules to push
 ###############################################################################
 
 EdgeRouters:
@@ -43,36 +46,34 @@ EdgeRouters:
     VRF: ***:***
     IPNH: ***.***.***.***
 
-
-
-
 ###############################################################################
 # If you are using the containerized sflow-rt and Exabgp processes then the
 # section below will not need to be changed.
 ###############################################################################
-
 
 sflow_rt_ip: 127.0.0.1
 sflow_rt_port: 8008
 exabgp_ip: 127.0.0.1
 exabgp_port: 5000
 
-
 ###############################################################################
 # This Section will need to be modified to match your Flowspec Topology setup.
 ###############################################################################
 
 ###############################################################################
+#  Application run timer for determining DDOS flows. Default 5 seconds
+#  Poll time multiplier for getting sflow Statistics (default 3, so 15 seconds)
 #  Max number of sflow entries to poll (default 4000)
-#  Poll timer for getting sflow Statistics (default 15 seconds)
 ###############################################################################
 
-runtimer: 5
-sflowpolltime: 15
+AppRunTimer: 5
+SflowMultiplier: 3
 maxsflowentries: 4000
 
 ###############################################################################
-#  Ports and Protocols to inspect For the Policy Manager
+# Ports and Protocols to inspect For the Policy Manager
+# These can be added to/removed from whne the application is running, to
+# provide more selections in the UI drop down list
 ###############################################################################
 
 
