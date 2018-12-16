@@ -60,14 +60,16 @@ The commands to install on Windows (after installing Python 2.7.15) are below:
         python -m pip install pyyaml
         python -m pip install schedule
 
-Similar commands can be run in Mac OSX or Linux using brew or apt-get
+Similar commands can be run in Mac OSX or Linux using brew or apt-get.
 
-Note: If you want to run this demo not using a container (above) install 
+Note: If you want to run this demo outside of a container (above) install 
 
 EXABGP (version 4.0.10) : https://github.com/Exa-Networks/exabgp.git
 
 sFlow-RT : https://sflow-rt.com/download.php
 
+
+Note2:  Application will run with Python3 but has not been extensively tested.
 
 CONFIGURING AND RUNNING THE FLOWSPEC MANAGER
 ============================================
@@ -90,18 +92,13 @@ The AS to match your topology
         Exabgp_as:
           as: *****
 
-The Edge Routers details.  Namely Router ID, AS , Flowspec next-hop redirect and VRF 
-redirect
+Application Poll Details.  TImer between application run/poll to determine 
+offending flows.  Multiplier (of App run time ) between Sflow Polling.
+Max sFlow entries to poll.  Default (5, 15 seconds and 4000 entries)
 
-        EdgeRouters:
-          - RouterID: ***.***.***.***
-            AS: *****
-            VRF: ***:***
-            IPNH: ***.***.***.***
-          - RouterID: ***.***.***.***
-            AS: *****
-            VRF: ***:***
-            IPNH: ***.***.***.***
+        AppRunTimer: 5
+        SflowMultiplier: 3
+        maxsflowentries: 4000
 
 
 Step 2: Run the RenderConfigFiles.py Script
