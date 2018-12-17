@@ -83,16 +83,28 @@ IPProtocol:
   - ICMP: 1
 
 PortList:
-  - TCP=445
+  - TCP=0
   - TCP=23
-  - TCP=3389
-  - TCP=1433
   - TCP=53
+  - TCP=445
+  - TCP=1433
+  - TCP=3389
   - TCP=62084
   - TCP>1024
   - TCP<1024
+  - UDP=0 
+  - UDP=17
+  - UDP=19
   - UDP=53
+  - UDP=111
   - UDP=123
+  - UDP=161
+  - UDP=162
+  - UDP=389
+  - UDP=468
+  - UDP=520
+  - UDP=1900
+  - UDP=11211
   - UDP>1024
   - UDP<1024
   - ICMP Echo-Reply=0
