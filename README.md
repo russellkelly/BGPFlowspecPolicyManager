@@ -31,7 +31,7 @@ clone the git repository:
 
         git clone git@github.com:russellkelly/BGPFlowspecPolicyManager.git
 
-Switch to the clone directory SR_Demo_Repo
+Switch to the clone directory BGPFlowspecPolicyManager
 
         cd BGPFlowspecPolicyManager
 
