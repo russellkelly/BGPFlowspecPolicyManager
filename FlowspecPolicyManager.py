@@ -259,7 +259,6 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						try:
 							if not CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth,bw) and str(DataList) in FlowActionDict.keys() and SortedListOfPolicyUpdates.index(entry) == int(len(SortedListOfPolicyUpdates)-1):
 								print ("Returned False  - No Source or Destination Port in the source or destination portlist - removing the flow")
-								print DataList
 								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
 								FlowActionDict.pop(str(DataList),None)
 								ListOfFlows.remove(DataList)
@@ -1069,7 +1068,7 @@ class FlowspecGUI(ttk.Frame):
 		push_button0=tk.Button(self.window, text="Click Here", command=self.ProgramDefaultPolicy,font=("Verdana", 10),fg='white',bg='dark grey')
 		push_button0.grid(column=2, row=5,sticky='e')
 		ClearDefaultSelection=tk.Button(self.window,background=BG0, text="Clear Selections", command=self.ClearDefaultSelection,font=("Verdana", 10,'italic'))
-		ClearDefaultSelection.grid(column=3, row=5,sticky='w')
+		ClearDefaultSelection.grid(column=3, row=5,sticky='w', padx=10)
 		
 		# ---------------- ROW-6 ---------------#
 		
@@ -1189,9 +1188,9 @@ class FlowspecGUI(ttk.Frame):
 		
 		ProgramFlowPolicyLabel=tk.Label(self.window, background=BG0, text="Program Flow Policy >>>",font=("Verdana", 14,'bold'),justify='left')
 		ProgramFlowPolicyLabel.grid(column=1, columnspan=2,row=22,sticky='e',padx=120)
-		ProgramFlowPolicyButton=tk.Button(self.window, text="Click Here", command=self.UpdateFlowspecPolicy,font=("Verdana", 12),fg='white',bg='dark grey')
+		ProgramFlowPolicyButton=tk.Button(self.window, text="Click Here", command=self.UpdateFlowspecPolicy,font=("Verdana", 10),fg='white',bg='dark grey')
 		ProgramFlowPolicyButton.grid(column=2, row=22,sticky='e')
-		ClearPolicySelection=tk.Button(self.window, background=BG0, text="Clear Selections", command=self.ClearPolicySelection,font=("Verdana", 12,'italic'))
+		ClearPolicySelection=tk.Button(self.window, background=BG0, text="Clear Selections", command=self.ClearPolicySelection,font=("Verdana", 10,'italic'))
 		ClearPolicySelection.grid(column=3, row=22,sticky='w',padx=10)
 		
 		

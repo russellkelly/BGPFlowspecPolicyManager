@@ -4,6 +4,70 @@
 Ingress Router {{Router['RouterID']}}
 ===========================================================
 
+hardware tcam
+   profile FlowSpec
+      feature acl port ip
+         sequence 45
+         key size limit 160
+         key field dscp dst-ip ip-frag ip-protocol l4-dst-port l4-ops l4-src-port src-ip tcp-control ttl
+         action count drop
+         packet ipv4 forwarding bridged
+         packet ipv4 forwarding routed
+         packet ipv4 forwarding routed multicast
+         packet ipv4 mpls ipv4 forwarding mpls decap
+         packet ipv4 mpls ipv6 forwarding mpls decap
+         packet ipv4 non-vxlan forwarding routed decap
+         packet ipv4 vxlan eth ipv4 forwarding routed decap
+         packet ipv4 vxlan forwarding bridged decap
+      !
+      feature acl port ipv6
+         sequence 25
+         key field dst-ipv6 ipv6-next-header ipv6-traffic-class l4-dst-port l4-ops-3b l4-src-port src-ipv6-high src-ipv6-low tcp-control
+         action count drop mirror
+         packet ipv6 forwarding bridged
+         packet ipv6 forwarding routed
+         packet ipv6 forwarding routed multicast
+      !
+      feature flow-spec port ipv4
+         key size limit 160
+         key field dscp dst-ip ip-frag ip-protocol l4-dst-port l4-ops l4-src-port src-ip tcp-control
+         action count redirect
+         packet ipv4 forwarding routed
+      !
+      feature flow-spec port ipv6
+         key field dscp dst-ipv6 ipv6-next-header ipv6-traffic-class l4-dst-port l4-ops-3b l4-src-port src-ipv6 tcp-control
+         action count redirect
+         packet ipv6 forwarding routed
+      !
+      feature pbr ip
+         sequence 60
+         key size limit 160
+         key field dscp dst-ip ip-frag ip-protocol l4-dst-port l4-ops-18b l4-src-port src-ip tcp-control
+         action count redirect
+         packet ipv4 forwarding routed
+         packet ipv4 mpls ipv4 forwarding mpls decap
+         packet ipv4 mpls ipv6 forwarding mpls decap
+         packet ipv4 non-vxlan forwarding routed decap
+         packet ipv4 vxlan forwarding bridged decap
+      !
+      feature qos ip
+         sequence 75
+         key size limit 160
+         key field dscp dst-ip ip-frag ip-protocol l4-dst-port l4-ops l4-src-port src-ip tcp-control
+         action set-dscp set-policer set-tc
+         packet ipv4 forwarding routed
+         packet ipv4 forwarding routed multicast
+         packet ipv4 mpls ipv4 forwarding mpls decap
+         packet ipv4 mpls ipv6 forwarding mpls decap
+         packet ipv4 non-vxlan forwarding routed decap
+      !
+      feature qos ipv6
+         sequence 70
+         key field dst-ipv6 ipv6-next-header ipv6-traffic-class l4-dst-port l4-src-port src-ipv6-high src-ipv6-low
+         action set-dscp set-policer set-tc
+         packet ipv6 forwarding routed
+   system profile FlowSpec
+
 sflow destination {{FlowspecManagerPublicIP}}
 sflow source {{Router['RouterID']}}
 
