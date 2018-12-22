@@ -63,22 +63,17 @@ WORKDIR /home/flowspec
 RUN cd /home/flowspec ; wget https://inmon.com/products/sFlow-RT/sflow-rt.tar.gz ; tar -xvzf sflow-rt.tar.gz
 
 
-
-
 EXPOSE 179
 EXPOSE 2022
+EXPOSE 4200
+EXPOSE 4201
 EXPOSE 5000
 EXPOSE 5001
-EXPOSE 4200
 EXPOSE 5002
 EXPOSE 5003
-EXPOSE 4201
-EXPOSE 179
-EXPOSE 5002
-EXPOSE 5003
-EXPOSE 4201
-EXPOSE 8008
 EXPOSE 6343
+EXPOSE 8008
+
 
 COPY ConfigFiles/exabgp.env /usr/local/etc/exabgp/exabgp.env
 
