@@ -92,14 +92,6 @@ The AS to match your topology
         Exabgp_as:
           as: *****
 
-Application Poll Details.  TImer between application run/poll to determine 
-offending flows.  Multiplier (of App run time ) between Sflow Polling.
-Max sFlow entries to poll.  Default (5, 15 seconds and 4000 entries)
-
-        AppRunTimer: 5
-        SflowMultiplier: 3
-        maxsflowentries: 4000
-
 
 Step 2: Run the RenderConfigFiles.py Script
 --------------------------------------------
@@ -135,15 +127,18 @@ You can ssh to the local container by running .
 Step 4: Tune Topology Varibles File (if required)
 -------------------------------------------------
 
-The topology file can be edited to chahnge the frequency sflow-RT is polled for 
-new/changed flows.  This makes the app more responsive.  Default is 15 seconds.  This
-seems to work for ~1000 flow changes per polling period.
+The topology file can be edited to change the frequency the app iterates
+and that sflow-RT is polled for new/changed flows.  
 
-        sflowpolltime: 15
+The timer between application run/poll to determine 
+offending flows, the multiplier (of the App run time ) between Sflow
+Polling. Max non-zero sFlow entries the application will iterate through, 
+sorted from highest flow to lowest. Default for this is (5, 15 seconds 
+and 4000 for the app runtime, sFlow multiplier, and the sFlow cache iteration 
+respectively)
 
-The default max number of non-zerp sflow records the app will iterate through is 4000. 
-This can be changed in the topology file entry:
-
+        AppRunTimer: 5
+        SflowMultiplier: 3
         maxsflowentries: 4000
 
 Finally, you can add remove specific TCP UDP ports to match on.  Additionally ICMP messages
