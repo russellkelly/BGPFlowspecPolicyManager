@@ -92,6 +92,14 @@ The AS to match your topology
         Exabgp_as:
           as: *****
 
+The Edge Flowspec Router details to match the topology
+
+        EdgeRouters:
+            - RouterID: ***.***.***.***
+              AS: *****
+              VRF: ***:***
+              IPNH: ***.***.***.***
+
 
 Step 2: Run the RenderConfigFiles.py Script
 --------------------------------------------
