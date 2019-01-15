@@ -984,7 +984,7 @@ class FlowspecGUI(ttk.Frame):
 		ttk.Frame.__init__(self, parent=None, style='FlowspecGUI.TFrame', borderwidth=0,relief='raised')
 		self.mainwindow = parent
 		self.mainwindow.title('BGP Flowspec Policy Manager')
-		self.mainwindow.geometry('950x900')
+		self.mainwindow.geometry('1000x900')
 
 		self.createWidgets(BG0, BG1)
 		
@@ -1072,7 +1072,7 @@ class FlowspecGUI(ttk.Frame):
 		
 		# ---------------- ROW-6 ---------------#
 		
-		SpacerLabel=tk.Label(self.window,background=BG0,text="\n",font=("Verdana", 12),justify='right')
+		SpacerLabel=tk.Label(self.window,background=BG0,text="\n",font=("Verdana", 10),justify='right')
 		SpacerLabel.grid(column=3, columnspan=3,row=6,sticky='w')		
 		
 		# ---------------- ROW-7 ---------------#
@@ -1080,11 +1080,11 @@ class FlowspecGUI(ttk.Frame):
 		SectionLabel=tk.Label(self.window,background=BG0,text="Active Default Policy:",font=("Verdana", 12,'bold'),justify='left',fg='dark blue')
 		SectionLabel.grid(column=1, row=7,sticky='e',padx=10)
 		
-		self.DefaultBandwidthTextBoxPolicy = tk.Text(self.window,background=BG0,height = 1, width = 40, borderwidth=2, relief="raised",font=("Verdana",12))
+		self.DefaultBandwidthTextBoxPolicy = tk.Text(self.window,background=BG0,height = 1, width = 42, borderwidth=2, relief="raised",font=("Verdana",12))
 		self.DefaultBandwidthTextBoxPolicy.grid(column=2, columnspan=2,row=7,sticky='w',padx=10)
 		
-		ClearDefaultPolicy=tk.Button(self.window, background=BG0, text="Clear Default Policy",command=self.ClearDefaultPolicy,font=("Verdana", 10))
-		ClearDefaultPolicy.grid(column=3, row=7,sticky='w',padx=60)
+		ClearDefaultPolicy=tk.Button(self.window, background=BG0, text="Clear Default Policy",command=self.ClearDefaultPolicy, font=("Verdana", 10,'bold'),)
+		ClearDefaultPolicy.grid(column=3, row=7,sticky='e')
 		
 		# ---------------- ROW-8 ---------------#
 		
@@ -1537,7 +1537,7 @@ class FlowspecGUI(ttk.Frame):
 			for entry in self.DefaultBandwidthPolicy:
 				UpdatePolicyQueue.put(entry)
 			self.DefaultBandwidthTextBoxPolicy.delete('1.0', 'end')
-			self.DefaultBandwidthTextBoxPolicy.configure(bg = 'dark blue', wrap='word', fg = 'white',font=("Verdana", 10,'bold'))
+			self.DefaultBandwidthTextBoxPolicy.configure(bg = 'dark blue', wrap='word', width=42, fg = 'white',font=("Verdana", 10,'bold'))
 			self.DefaultBandwidthTextBoxPolicy.insert('end', 'Policy BW: ' +str(self.DefaultBandwidth)+ ' Mbps   Action: '+str(self.defaultaction))
 			self.DefaultBandwidthTextBoxPolicy.tag_add("centered", "1.0", 'end')
 			self.DefaultBandwidthTextBoxPolicy.tag_configure("centered",justify='center')
@@ -1554,7 +1554,7 @@ class FlowspecGUI(ttk.Frame):
 	def ClearDefaultPolicy(self):
 		self.DefaultBandwidthPolicy = []
 		self.DefaultBandwidthTextBoxPolicy.delete(1.0,'end')
-		self.DefaultBandwidthTextBoxPolicy.configure(bg = 'white')
+		self.DefaultBandwidthTextBoxPolicy.configure(bg = 'white',width=42)
 		self.DefaultBandwidthPolicy.append('DefaultBandwidth:')
 		self.DefaultBandwidth = 0
 		self.DefaultBandwidthPolicy.append(self.DefaultBandwidth)
