@@ -1401,11 +1401,16 @@ class FlowspecGUI(ttk.Frame):
 	def HardExit(self):
 		print ("Withdrawing all routes")
 		for Router in topo_vars['EdgeRouters']:
-			command = 'neighbor '+str(Router['RouterID'])+  ' teardown 2'
-			print (command)
-			r = requests.post(exabgpurl, data={'command': command})
-			time.sleep(.2)
-		print (" \n\n Hard Clearing the Controller BGP peering Session")
+			try:
+				print (" \n\n Hard Clearing the Controller BGP peering Session")
+				command = 'neighbor '+str(Router['RouterID'])+  ' teardown 2'
+				print (command)
+				r = requests.post(exabgpurl, data={'command': command})
+				time.sleep(.2)
+			except:
+				command = 'restart'
+				print (command)
+				print ("\n\nProblem With ExaBgp Restarting ExaBgp ........\n\n\n")
 		self.DoneLabel=tk.Label(self.popup,text="\nDone!!!",font=("Verdana", 12,'bold'),justify='center')
 		self.DoneLabel.grid(column=1, row=4,sticky='n',pady=20,padx=20)
 		self.popup.after(1000,self.terminate)
@@ -1959,11 +1964,16 @@ class FlowspecGUI(ttk.Frame):
 		self.ClearDiscardPolicy()
 		self.ClearDefaultPolicy()
 		for Router in topo_vars['EdgeRouters']:
-			command = 'neighbor '+str(Router['RouterID'])+  ' teardown 2'
-			print (command)
-			r = requests.post(exabgpurl, data={'command': command})
-			time.sleep(.2)
-		print (" \n\n Hard Clearing the Controller BGP peering Session")
+			try:
+				print (" \n\n Hard Clearing the Controller BGP peering Session")
+				command = 'neighbor '+str(Router['RouterID'])+  ' teardown 2'
+				print (command)
+				r = requests.post(exabgpurl, data={'command': command})
+				time.sleep(.2)
+			except:
+				command = 'restart'
+				print (command)
+				print ("\n\nProblem With ExaBgp Restarting ExaBgp ........\n\n\n")
 		print ("\n\nProgramming Sflow Collector ........\n\n\n")
 		while True:
 			try:
