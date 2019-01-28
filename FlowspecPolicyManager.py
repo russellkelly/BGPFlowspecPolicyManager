@@ -395,22 +395,21 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		except:
 			pass
 
-
 		# Remove Flows from the DeadFlowList
 		if DeadFlowRemoval == str('True'):
-			if deadflowcount == (DeadFlowRemovalTimer):
-					try:
-							for Entry in DeadSflowList:
-									try:
-											ListOfFlows.remove(Entry)
-											ExabgpAndQueueCalls.ExaBgpWithdraw(str(Entry[0]),str(Entry[1]),str(Entry[2]),str(Entry[3]),str(Entry[5]),str(Entry[6]),FlowActionDict.get(str(Entry)),ExaBGPQueue)
-											FlowActionDict.pop(str(Entry),None)
-									except:
-											pass
-									DeadSflowList.remove(Entry)
-							deadflowcount = 0
-					except:
+			if deadflowcount >= (DeadFlowRemovalTimer):
+				try:
+					for Entry in DeadSflowList:
+						try:
+							ListOfFlows.remove(Entry)
+							ExabgpAndQueueCalls.ExaBgpWithdraw(str(Entry[0]),str(Entry[1]),str(Entry[2]),str(Entry[3]),str(Entry[5]),str(Entry[6]),FlowActionDict.get(str(Entry)),ExaBGPQueue)
+							FlowActionDict.pop(str(Entry),None)
+						except:
 							pass
+						DeadSflowList.remove(Entry)
+				except:
+						pass
+				deadflowcount = 0
 		
 
 			
