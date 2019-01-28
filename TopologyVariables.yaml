@@ -63,12 +63,20 @@ exabgp_port: 5000
 ###############################################################################
 #  Application run timer for determining DDOS flows. Default 5 seconds
 #  Poll time multiplier for getting sflow Statistics (default 3, so 15 seconds)
-#  Max number of sflow entries to poll (default 4000)
+#  Number of sflow entries to poll (default 4000)
+#  Time Before Sflow Records Consideredd "Dead" and tagged for removal
+#  Extra time to wait before removing Flows
+#  If DeadFlowRemoval set to "True" flows are removed.  For scale testing where
+#  the flows are not refreshed often set this boolean to "False".
+#  One can also increase the Sflow Dead Timer to stop churn
 ###############################################################################
 
-AppRunTimer: 5
+AppRunWaitTime: 5
 SflowMultiplier: 3
-maxsflowentries: 4000
+MaxSflowEntries: 4000
+SflowDeadTimer: 60
+DeadSflowRemovalWaitTime: 5
+DeadFlowRemoval: True
 
 ###############################################################################
 # Ports and Protocols to inspect For the Policy Manager

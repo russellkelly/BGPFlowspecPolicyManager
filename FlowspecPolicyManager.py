@@ -31,6 +31,8 @@ import copy
 import schedule
 import time
 import sys
+from datetime import datetime  
+from datetime import timedelta  
 from pprint import pprint as pp
 
 
@@ -51,8 +53,13 @@ file.close()
 sflowIP=str(topo_vars['sflow_rt_ip'])
 ExabgpIP=str(topo_vars['exabgp_ip'])
 SflowMultiplier=int(topo_vars['SflowMultiplier'])
-AppRunTimer=int(topo_vars['AppRunTimer'])
-MaxSflowEntries=str(topo_vars['maxsflowentries'])
+AppRunTimer=int(topo_vars['AppRunWaitTime'])
+MaxSflowEntries=str(topo_vars['MaxSflowEntries'])
+DeadSflowTimer=str(topo_vars['SflowDeadTimer'])
+DeadFlowRemovalTimer=int(topo_vars['DeadSflowRemovalWaitTime'])
+DeadFlowRemoval=str(topo_vars['DeadFlowRemoval'])
+
+
 
 sflowrt_url = 'http://'+sflowIP+':'+str(topo_vars['sflow_rt_port'])
 exabgpurl= 'http://'+ExabgpIP+':'+str(topo_vars['exabgp_port'])
@@ -110,6 +117,8 @@ def ProgramSflowrt():
 def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,ManualRouteQueue,UpdatePolicyQueue,SignalResetQueue,ExaBGPQueue):
 	ExabgpAndQueueCalls = FindAndProgramDdosFlowsHelperClass()
 	ListOfFlows = []
+	DeadSflowList = []
+	TimeStampedFlowDict = {}
 	FlowBandwidthDict = {}
 	FlowActionDict = {}
 	DefaultBandwidth = 0
@@ -119,6 +128,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 	_cached_stamp = 0
 	TopologyVariables = abs_file_path
 	sflowcount = 0
+	deadflowcount = 0
 	
 	while True:
 		try:
@@ -128,6 +138,8 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 				ExabgpAndQueueCalls.ResetActiveFlowspecRoutes()
 				FlowBandwidthDict = {}
 				FlowActionDict = {}
+				DeadSflowList = []
+				TimeStampedFlowDict = {}
 				DefaultBandwidth = 0
 				DiscardPolicyUpdate = ['discard', 0, [], []]
 				RedirectNHPolicyUpdate = ['redirect next-hop', 0, [], []]
@@ -180,13 +192,12 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		SortedListOfPolicyUpdates = copy.deepcopy(Sort(ListOfPolicyUpdates))
 		SortedListOfPolicyUpdates = [item for item in SortedListOfPolicyUpdates if item[1] != 0]
 		
-		try:
-			MinValue = float(SortedListOfPolicyUpdates[0][1])*1000000
-		except:
-			MinValue = 1
+
+		#Min Value to Include in Sflow Collection (Just everything)
+		MinValue = 0
 
 		if sflowcount == 0 or sflowcount == (AppRunTimer*SflowMultiplier):
-			print("running sflow")
+			###--("running sflow")
 			try:
 				session = requests.Session()
 				retry = Retry(connect=3, backoff_factor=0.5)
@@ -198,10 +209,10 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 				except:
 					pass
 			except requests.exceptions.ConnectionError:
-				r.status_code = "Connection refused"	
+				r.status_code = "Connection refused"
 			rawflows = r.json()
 			sflowcount = 0
-		
+
 		try:
 			for i in rawflows:
 				Data = str(i["key"])
@@ -227,8 +238,24 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						CurrentConfiguredDestinationProtocolPortList = GetPortList(entry[3])
 						try:
 							if CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth,bw):
-								print("Flow Passed the Check (returned true) and is about to be Programmed")
+								###--("Flow Passed the Check (returned true) and is about to be Programmed")
 								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue)
+								
+								# Add a timestamped version of the DataList
+								if not TimeStampedFlowDict.get(str(DataList)):
+									TimeStampedFlowDict[str(DataList)]=datetime.now()
+									###--("Datalist not in TimeStamped Flow Dict so adding")
+									
+								if Data.split(",") in DeadSflowList:
+									DeadSflowList.remove(Data.split(","))
+									TimeStampedFlowDict[str(DataList)]=datetime.now()
+									###--("must have been a dead flow, removing from dead flow and adding to TimestampedFlowDict now that it's ALIVE!")
+								
+								if TimeStampedFlowDict.get(str(DataList)) and TimeStampedFlowDict.get(str(DataList)) > datetime.now() - timedelta(seconds=int(DeadSflowTimer)):
+									###--("refreshing entry")
+									TimeStampedFlowDict.pop(str(DataList))
+									TimeStampedFlowDict[str(DataList)]=datetime.now()
+								
 								break
 							else:
 								try: ## Try adding with default policy values (pass if none)
@@ -247,7 +274,22 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		
 									if bw > DefaultBandwidth and DefaultBandwidth != 0 and SortedListOfPolicyUpdates.index(entry) == int(len(SortedListOfPolicyUpdates)-1) and 'None' not in CurrentAction:
 										ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue)
-										print ("Checked all Policies For Flow, Doesn't exist yet, so add it using Default Policy")
+										###-- ("Checked all Policies For Flow, Doesn't exist yet, so add it using Default Policy")
+										
+										# Add a timestamped version of the DataList
+										if not TimeStampedFlowDict.get(str(DataList)):
+											TimeStampedFlowDict[str(DataList)]=datetime.now()
+											###--("Datalist not in TimeStamped Flow Dict so adding")
+										if Data.split(",") in DeadSflowList:
+											DeadSflowList.remove(Data.split(","))
+											TimeStampedFlowDict[str(DataList)]=datetime.now()
+											###--("must have been a dead flow, removing from dead flow and adding to TimestampedFlowDict now that it's ALIVE!")
+										if TimeStampedFlowDict.get(str(DataList)) and TimeStampedFlowDict.get(str(DataList)) > datetime.now() - timedelta(seconds=int(DeadSflowTimer)):
+											###-- ("refreshing entry")
+											TimeStampedFlowDict.pop(str(DataList))
+											TimeStampedFlowDict[str(DataList)]=datetime.now()
+										
+								
 										break
 								except:
 									pass
@@ -258,28 +300,32 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 							
 						try:
 							if not CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth,bw) and str(DataList) in FlowActionDict.keys() and SortedListOfPolicyUpdates.index(entry) == int(len(SortedListOfPolicyUpdates)-1):
-								print ("Returned False  - No Source or Destination Port in the source or destination portlist - removing the flow")
+								###--("Returned False  - No Source or Destination Port in the source or destination portlist - removing the flow")
 								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
 								FlowActionDict.pop(str(DataList),None)
 								ListOfFlows.remove(DataList)
+								TimeStampedFlowDict.pop(str(DataList),None)
+								DeadSflowList.remove(DataList)
 								break
 						except:
 							pass
 						
 						try:
-
+						
 							if bw < DefaultBandwidth:
 								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
 								FlowActionDict.pop(str(DataList),None)
 								ListOfFlows.remove(DataList)
-								print ("No flow policy but default BW > flow bw - have to remove flows.")
+								TimeStampedFlowDict.pop(str(DataList),None)
+								DeadSflowList.remove(DataList)
+								###--("No flow policy but default BW > flow bw - have to remove flows.")
 						except:
 							pass
 
-		# No Flow Policy Set.Just use default BW Policy
+		# No Flow Policy Set. Just use default BW Policy
 		
 				if SortedListOfPolicyUpdates == [] and DefaultBandwidth != 0:
-					print ("Hit the default")
+					###--("Hit the default")
 					try:
 						if DefaultAction == 'discard':
 							CurrentAction = DefaultAction
@@ -297,30 +343,81 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						if bw > DefaultBandwidth:
 							if 'None' not in CurrentAction:
 								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue)
-								print ("BW > default, and there is an action.  So program the flow (using local function ProgramFlowPolicies")
+								###--("BW > default, and there is an action.  So program the flow (using local function ProgramFlowPolicies")
+								
+								# Add a timestamped version of the DataList
+								if not TimeStampedFlowDict.get(str(DataList)):
+									TimeStampedFlowDict[str(DataList)]=datetime.now()
+									###--("Datalist not in TimeStamped Flow Dict so adding")
+								if Data.split(",") in DeadSflowList:
+									DeadSflowList.remove(Data.split(","))
+									TimeStampedFlowDict[str(DataList)]=datetime.now()
+									###--("must have been a dead flow, removing from dead flow and adding to TimestampedFlowDict now that it's ALIVE!")
+								if TimeStampedFlowDict.get(str(DataList)) and TimeStampedFlowDict.get(str(DataList)) > datetime.now() - timedelta(seconds=int(DeadSflowTimer)):
+									###-- ("refreshing entry")
+									TimeStampedFlowDict.pop(str(DataList))
+									TimeStampedFlowDict[str(DataList)]=datetime.now()
 						
 						if DataList in ListOfFlows and 'None' in CurrentAction:
 							ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
 							FlowActionDict.pop(str(DataList),None)
 							ListOfFlows.remove(DataList)
-							print ("Theres a None I have to remove - Use ExabgpWithdraw so the activeflowlist is updated")
+							TimeStampedFlowDict.pop(str(DataList),None)
+							DeadSflowList.remove(DataList)
+							###--("Theres a None I have to remove - Use ExabgpWithdraw so the activeflowlist is updated")
 							
 						if DataList in ListOfFlows and bw < DefaultBandwidth:
 							ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
 							FlowActionDict.pop(str(DataList),None)
 							ListOfFlows.remove(DataList)
-							print ("No flow policy but default BW > flow bw - have to remove flows. Use ExabgpWithdraw so the activeflowlist is updated")
+							TimeStampedFlowDict.pop(str(DataList),None)
+							DeadSflowList.remove(DataList)
+							###--("No flow policy but default BW > flow bw - have to remove flows. Use ExabgpWithdraw so the activeflowlist is updated")
 					except:
 						pass
 				else:
 					pass
+				
+			###--("Create the deadflow list")
+			for entry in TimeStampedFlowDict.keys():
+				try:
+					if TimeStampedFlowDict.get(str(entry)) and TimeStampedFlowDict.get(str(entry)) < datetime.now() - timedelta(seconds=int(DeadSflowTimer)) :
+						TimeStampedFlowDict.pop(str(entry), None)
+						entry = entry.translate(None,"[] '")
+						ListifiedEntry  = entry.split(",")
+						if ListifiedEntry not in DeadSflowList:
+							DeadSflowList.append(ListifiedEntry)
+						else:
+							###--(" already in deadflow")
+							pass
+				except:
+					pass	
 		except:
 			pass
+
+
+		# Remove Flows from the DeadFlowList
+		if DeadFlowRemoval == str('True'):
+			if deadflowcount == (DeadFlowRemovalTimer):
+					try:
+							for Entry in DeadSflowList:
+									try:
+											ListOfFlows.remove(Entry)
+											ExabgpAndQueueCalls.ExaBgpWithdraw(str(Entry[0]),str(Entry[1]),str(Entry[2]),str(Entry[3]),str(Entry[5]),str(Entry[6]),FlowActionDict.get(str(Entry)),ExaBGPQueue)
+											FlowActionDict.pop(str(Entry),None)
+									except:
+											pass
+									DeadSflowList.remove(Entry)
+							deadflowcount = 0
+					except:
+							pass
+		
+
 			
 		# Else withdraw all the flows.
 		
 		if SortedListOfPolicyUpdates == [] and DefaultBandwidth == 0 and len(ListOfFlows) != 0:
-			print ("Withdrawing all routes - No Policies at all matching.   All active routes will be withdrawn one by one")
+			###-- ("Withdrawing all routes - No Policies at all matching.   All active routes will be withdrawn one by one")
 			for DataList in ListOfFlows:
 				ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
 				FlowActionDict.pop(str(DataList),None)
@@ -349,7 +446,26 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		if stamp != _cached_stamp: 			# Well the TopologyVariables File Changed
 			_cached_stamp = stamp
 			RenderTopologyVariables()
+		deadflowcount += AppRunTimer
 		sflowcount += AppRunTimer
+		
+		# Print the Application Variables and Active Data
+		print ("\n\n\nApplication Variables and Data:")
+		print ("===============================\n")
+		print ("\nApplication Variables")
+		print ("---------------------")
+		print ("\nApplication Loop Time: "+str(AppRunTimer))
+		print ("\nMax Number of Flows Being Monitored: "+str(MaxSflowEntries))
+		print ("\nDead Flow Removal Timer: "+str(DeadFlowRemovalTimer))
+		print ("\nDead Flow Removal True or False: "+str(DeadFlowRemoval))
+		print ("\n\nLive Data")
+		print ("----------")
+		print ("Time stamped Dict Length: "+str(len(TimeStampedFlowDict)))
+		print ("\nDead Flow List Length: "+str(len(DeadSflowList)))
+		print ("\nList of Flows Length: "+str(len(ListOfFlows)))
+		print ("\nFlow Action Dict Length: "+str(len(FlowActionDict)))
+		
+
 		time.sleep(AppRunTimer)
 		
 		
@@ -359,6 +475,10 @@ def RenderTopologyVariables():
 	global NHIPDict
 	global SflowMultiplier
 	global AppRunTimer
+	global DeadSflowTimer
+	global MaxSflowEntries
+	global DeadFlowRemovalTimer
+	global DeadFlowRemoval
 	script_dir = os.path.dirname(__file__)
 	rel_path = "TopologyVariables.yaml"
 	abs_file_path = os.path.join(script_dir, rel_path)
@@ -368,8 +488,11 @@ def RenderTopologyVariables():
 	file.close()
 	try:
 		SflowMultiplier=int(topo_vars['SflowMultiplier'])
-		AppRunTimer=int(topo_vars['AppRunTimer'])
-		MaxSflowEntries=str(topo_vars['maxsflowentries'])
+		AppRunTimer=int(topo_vars['AppRunWaitTime'])
+		MaxSflowEntries=str(topo_vars['MaxSflowEntries'])
+		DeadSflowTimer=str(topo_vars['SflowDeadTimer'])
+		DeadFlowRemovalTimer=int(topo_vars['DeadSflowRemovalWaitTime'])
+		DeadFlowRemoval=str(topo_vars['DeadFlowRemoval'])
 	except:
 		pass
 	try:
@@ -388,50 +511,50 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 		SourcePortProtocol = str(DataList[1])+':'+str(DataList[3])
 		DestinationPortProtocol = str(DataList[1])+':'+str(DataList[6])
 		if 'None' in CurrentAction:
-			print ("Theres a NONE as an action so returning false")
+			###--("Theres a NONE as an action so returning false")
 			return False
 		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and DestinationPortProtocol in CurrentConfiguredDestinationProtocolPortList and PolicyBandwidth > bw:
-			print ("The bandwidth of this flow is too low - returning False")
+			###--("The bandwidth of this flow is too low - returning False")
 			return False
 		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and DestinationPortProtocol in CurrentConfiguredDestinationProtocolPortList and bw >= PolicyBandwidth:
-			print ("Caught the Rule with an Exact Match on Source and Destination Port")
+			###--("Caught the Rule with an Exact Match on Source and Destination Port")
 			return True
 		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and str(DataList[1]) == '1' and bw >= PolicyBandwidth:
-			print ("Processed ICMP Flow (don't check destination - That specific match  S & D can be caught by above rule)")
+			###--("Processed ICMP Flow (don't check destination - That specific match  S & D can be caught by above rule)")
 			return True
 		elif DestinationPortProtocol in CurrentConfiguredDestinationProtocolPortList and bw >= PolicyBandwidth and CurrentConfiguredSourceProtocolPortList != []:
 			for entry in CurrentConfiguredSourceProtocolPortList:
 				if '>' in entry:
 					if DataList[1] == entry.split('>')[0] and DataList[3] > entry.split('>')[1]:
-						print ("Specific Destination Port Match and Source is explicitly > 1024 (well known ports)")
+						###--("Specific Destination Port Match and Source is explicitly > 1024 (well known ports)")
 						return True
 				elif '<' in entry:
 					if DataList[1] == entry.split('<')[0] and DataList[3] < entry.split('<')[1]:
-						print ("Specific Destination Port Match and Source is explicitly < 1024 (well known ports)")
+						###--("Specific Destination Port Match and Source is explicitly < 1024 (well known ports)")
 						return True
 				else:
-					print ("Specific Destination Port (don't check Source Port - That specific match S & D can be caught by above rule)")
+					###--("Specific Destination Port (don't check Source Port - That specific match S & D can be caught by above rule)")
 					return True
 			
 		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and bw >= PolicyBandwidth and CurrentConfiguredDestinationProtocolPortList != []:
 			for entry in CurrentConfiguredDestinationProtocolPortList:
 				if '>' in entry:
 					if DataList[1] == entry.split('>')[0] and DataList[6] > entry.split('>')[1]:
-						print ("Specific Source Port Match and Destination is explicitly > 1024 (well known ports)")
+						###--("Specific Source Port Match and Destination is explicitly > 1024 (well known ports)")
 						return True	
 				elif '<' in entry:
 					if DataList[1] == entry.split('<')[0] and DataList[6] < entry.split('<')[1]:
-						print ("Specific Source Port Match and Destination is explicitly < 1024 (well known ports)")
+						###--("Specific Source Port Match and Destination is explicitly < 1024 (well known ports)")
 						return True
 				else:
-					print ("Specific Source Port  (don't check Destination Port - That specific match S & D can be caught by above rule)")
+					###--("Specific Source Port  (don't check Destination Port - That specific match S & D can be caught by above rule)")
 					return True
 				
 		elif DestinationPortProtocol in CurrentConfiguredDestinationProtocolPortList and bw >= PolicyBandwidth:
-			print ("Specific Destination Port (No Source Port List at all - That specific match S & D can be caught by above rule)")
+			###--("Specific Destination Port (No Source Port List at all - That specific match S & D can be caught by above rule)")
 			return True
 		elif SourcePortProtocol in CurrentConfiguredSourceProtocolPortList and bw >= PolicyBandwidth:
-			print ("Specific Source Port  (No Destination Port List at all - That specific match S & D can be caught by above rule)")
+			###--("Specific Source Port  (No Destination Port List at all - That specific match S & D can be caught by above rule)")
 			return True
 		
 		elif bw >= PolicyBandwidth:
@@ -461,13 +584,13 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 					if DataList[1] in DestinationLessThanDict.keys() or DataList[1] in DestinationGreaterThanDict.keys():
 						try:
 							if int(DataList[6]) < int(DestinationLessThanDict.get(DataList[1])):
-								print ("Source < 1024 and Destination is < 1024 (well known ports)")
+								###--("Source < 1024 and Destination is < 1024 (well known ports)")
 								return True
 						except:
 							pass
 						try:
 							if int(DataList[6]) > int(DestinationGreaterThanDict.get(DataList[1])):
-								print ("Source < 1024 and Destination is > 1024 (well known ports)")
+								###--("Source < 1024 and Destination is > 1024 (well known ports)")
 								return True
 						except:
 							pass
@@ -480,18 +603,18 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 					if DataList[1] in DestinationLessThanDict.keys() or DataList[1] in DestinationGreaterThanDict.keys():
 						try:
 							if int(DataList[6]) < int(DestinationLessThanDict.get(DataList[1])):
-								print ("Source > 1024 and Destination is < 1024 (well known ports)")
+								###--("Source > 1024 and Destination is < 1024 (well known ports)")
 								return  True
 						except:
 							pass
 						try:
 							if int(DataList[6]) > int(DestinationGreaterThanDict.get(DataList[1])):
-								print ("Source > 1024 and Destination is > 1024 (well known ports)")
+								###--("Source > 1024 and Destination is > 1024 (well known ports)")
 								return True
 						except:
 							pass
 				else:
-					print ("Source port or Destination Port is not in any configured Policy -> Returning False")
+					###--("Source port or Destination Port is not in any configured Policy -> Returning False")
 					return False
 			except:
 				pass
@@ -507,24 +630,25 @@ def ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,
 			ListOfFlows.append(DataList)
 			FlowActionDict[str(DataList)]=CurrentAction
 			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),CurrentAction,ExaBGPQueue)
-			print ("Length List of flows 0 , added the flow and Dict Entry")
+			###--("Length List of flows 0 , added the flow and Dict Entry")
 		elif FlowActionDict.get(str(DataList)) != None and FlowActionDict.get(str(DataList)) != CurrentAction:
 			ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
 			FlowActionDict.pop(str(DataList),None)
 			ListOfFlows.remove(DataList)
-			print ("Popped the dict entry and List")
+			###--("Popped the dict entry and List")
 			ListOfFlows.append(DataList)
 			FlowActionDict[str(DataList)]=CurrentAction
 			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),CurrentAction,ExaBGPQueue)
-			print ("Added flow and Dict entry and list")
+			###--("Added flow and Dict entry and list")
 		elif DataList not in ListOfFlows:
 			ListOfFlows.append(DataList)
 			FlowActionDict[str(DataList)]=CurrentAction
 			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
-			print ("Hit the else, added the flow and Dict Entry")
+			###--("Hit the else, added the flow and Dict Entry")
 		else:
 			if DataList in ListOfFlows:
-				print ("Hit the pass rule")
+				###--("Hit the pass rule")
+				pass
 	except:
 		pass				
 
@@ -645,9 +769,12 @@ class ShowFlowspecRoutesPopup(object):
 		width = ParentWindow.winfo_width()
 		self.popup.geometry("+%d+%d" % (ParentWindow.winfo_rootx()+width,ParentWindow.winfo_rooty()))
 		self.popup.lift()
+		self.NumberOfFlowRoutes = 0
 		self.popup.title("Active Flowspec Rules Programmed on Edge Routers")
 		self.TitleLabel=tk.Label(self.popup,text="### Active Flowspec Rules Programmed on Edge Routers###\n",font=("Verdana", 20),justify='left')
-		self.TitleLabel.grid(column=0, row=0,columnspan=3, sticky='n')		
+		self.TitleLabel.grid(column=0, row=0,columnspan=3, sticky='n')
+		self.FlowCount=tk.Label(self.popup,text='Number of Active Flow Routes '+str(self.NumberOfFlowRoutes)+'\n',font=("Verdana", 16),justify='center')
+		self.FlowCount.grid(column=0, row=1,columnspan=3, sticky='new')
 		self.text_wid = tk.Text(self.popup,relief = 'raised', height=20,width=140,borderwidth=3)
 		self.text_wid.insert('end','Neighbor		Source			Destination			Protocol		Source Port		Destination Port		Active Action\n\n')
 		self.scroll = tk.Scrollbar(self.popup, command=self.text_wid.yview)
@@ -662,10 +789,14 @@ class ShowFlowspecRoutesPopup(object):
 			ListOfRoutes = c_queue.get(0)
 			self.text_wid.delete('1.0', 'end')
 			self.text_wid.insert('end','Neighbor		Source			Destination			Protocol		Source Port		Destination Port		Active Action\n\n')
+			self.NumberOfFlowRoutes = 0
 			for line in ListOfRoutes:
+				self.NumberOfFlowRoutes +=1
 				for r in (('neighbor ',''),(' source-port ',''), (' destination-port ',''),(' source ','		'), (' destination ','			'), ('protocol ','			'),('[',''),(']','		')):
 					line = line.replace(*r)
 				self.text_wid.insert('end', line+'\n')
+			self.FlowCount=tk.Label(self.popup,text='Number of Active Flow Routes '+str(self.NumberOfFlowRoutes)+'\n',font=("Verdana", 16),justify='center')
+			self.FlowCount.grid(column=0, row=1,columnspan=3, sticky='new')
 		except Empty:
 			pass
 		finally:
@@ -686,9 +817,12 @@ class ShowSflowPopup(object):
 		self.popup.grid_rowconfigure(2, weight=1)
 		self.popup.geometry("+%d+%d" % (ParentWindow.winfo_rootx()+width,ParentWindow.winfo_rooty()+height))
 		self.popup.lift()
+		self.NumberOfFlows = 0
 		self.popup.title("Active Inspected sFlow Records From Edge Routers")
 		self.TitleLabel=tk.Label(self.popup,text="### Active Inspected sFlow Records From Edge Routers###\n",font=("Verdana", 20),justify='center')
 		self.TitleLabel.grid(column=0, row=0,columnspan=3, sticky='n')
+		self.FlowCount=tk.Label(self.popup,text='Number of Active Flows '+str(self.NumberOfFlows)+'\n',font=("Verdana", 16),justify='center')
+		self.FlowCount.grid(column=0, row=1,columnspan=3, sticky='new')
 		self.text_wid = tk.Text(self.popup,relief = 'raised', height=20,width=130,borderwidth=3)
 		self.text_wid.insert('end', 'Router		Protocol		Source-IP		SourcePort		Source Intf-ID		Destination-IP		DestinationPort		Bandwidth\n\n')
 		self.scroll = tk.Scrollbar(self.popup, command=self.text_wid.yview)
@@ -703,9 +837,13 @@ class ShowSflowPopup(object):
 			self.ListOfFlows = c_queue.get(0)
 			self.text_wid.delete('1.0', 'end')
 			self.text_wid.insert('end', 'Router		Protocol		Source-IP		SourcePort		Source Intf-ID		Destination-IP		DestinationPort		Bandwidth\n\n')
+			self.NumberOfFlows = 0
 			for line in self.ListOfFlows:
+				self.NumberOfFlows += 1
 				line = '		'.join(line)
 				self.text_wid.insert('end', str(line) + '\n')
+			self.FlowCount=tk.Label(self.popup,text='Number of Active Flows '+str(self.NumberOfFlows)+'\n',font=("Verdana", 16),justify='center')
+			self.FlowCount.grid(column=0, row=1,columnspan=3, sticky='ew')			
 		except Empty:
 			pass
 		finally:
@@ -938,12 +1076,12 @@ class VerticalScrollFrame(ttk.Frame):
 		
 		# Set interior frame height and canvas scrollregion
 		if canvasHeight > interiorReqHeight:
-			#print('canvasHeight > interiorReqHeight')
+			###--('canvasHeight > interiorReqHeight')
 			self.canvas.itemconfigure(self.interior_id,  height=canvasHeight)
 			self.canvas.config(scrollregion="0 0 {0} {1}".
 							   format(canvasWidth, canvasHeight))
 		else:
-			#print('canvasHeight <= interiorReqHeight')
+			###--('canvasHeight <= interiorReqHeight')
 			self.canvas.itemconfigure(self.interior_id, height=interiorReqHeight)
 			self.canvas.config(scrollregion="0 0 {0} {1}".
 							   format(canvasWidth, interiorReqHeight))
@@ -1053,8 +1191,11 @@ class FlowspecGUI(ttk.Frame):
 		DefaultFlowPolicyBwLabel=tk.Label(self.window, background=BG0, text="Default Policy Inspection Bandwidth (Mbps): ",font=("Verdana", 10),justify='right')
 		DefaultFlowPolicyBwLabel.grid(column=1,row=4,sticky='e',pady=10)
 		
-		self.DefaultBandwidthTextBox = tk.Text(self.window, background=BG0, height = 1, width = 40, borderwidth=1, relief="ridge",font=("Verdana",10,'italic'),fg='grey70')
-		self.DefaultBandwidthTextBox.insert('1.0','  (Click <enter/return> to set policy bandwidth)')
+		self.DefaultBandwidthTextBox = tk.Text(self.window, background=BG0, height = 1, width = 40, borderwidth=1, relief="ridge")
+		self.DefaultBandwidthTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
+		self.DefaultBandwidthTextBox.insert('1.0','(Click <enter/return> to set policy bandwidth)')
+		self.DefaultBandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
+		self.DefaultBandwidthTextBox.tag_configure("boldcentered",justify='center',background='white')
 		self.DefaultBandwidthTextBox.bind("<Button-1>", self.SetDefaultBandwidthTextBoxFocus)
 		self.DefaultBandwidthTextBox.bind("<Return>", self.GetDefaultFlowPolicyBandWidth)
 		self.DefaultBandwidthTextBox.bind("<FocusOut>", self.SetDefaultBandwidthTextBoxUnFocus)
@@ -1122,8 +1263,11 @@ class FlowspecGUI(ttk.Frame):
 		FlowPolicyBwLabel=tk.Label(self.window, background=BG0, text="Flow Policy Inspection Bandwidth (Mbps): ",font=("Verdana", 10),justify='right')
 		FlowPolicyBwLabel.grid(column=1,row=11,sticky='e',pady=10)
 		
-		self.BandwidthTextBox = tk.Text(self.window, background=BG0, height = 1, width = 40, borderwidth=1, relief="ridge",font=("Verdana",10,'italic'),fg='grey70')
-		self.BandwidthTextBox.insert('1.0','  (Click <enter/return> to set policy bandwidth)')
+		self.BandwidthTextBox = tk.Text(self.window, background=BG0, height = 1, width = 40, borderwidth=1, relief="ridge")
+		self.BandwidthTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
+		self.BandwidthTextBox.insert('1.0','(Click <enter/return> to set policy bandwidth)')
+		self.BandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
+		self.BandwidthTextBox.tag_configure("boldcentered",justify='center',background='white')
 		self.BandwidthTextBox.bind("<Button-1>", self.SetBandwidthTextBoxFocus)
 		self.BandwidthTextBox.bind("<Return>", self.GetFlowPolicyBandWidth)
 		self.BandwidthTextBox.bind("<FocusOut>", self.SetBandwidthTextBoxUnFocus)
@@ -1145,10 +1289,10 @@ class FlowspecGUI(ttk.Frame):
 		DestinationPortLabel=tk.Label(self.window, background=BG0, text="Select Destination Ports/Protocols: ",font=("Verdana", 10,'bold'),anchor='n')
 		DestinationPortLabel.grid(column=2, row=16)
 		
-		SelectPortButton = tk.Button(self.window, background=BG0,  text=" Add ", width=12, command=self.AddToPolicy,font=("Verdana",10))
+		SelectPortButton = tk.Button(self.window, background=BG0,  text=" Add ", width=10, command=self.AddToPolicy,font=("Verdana",10))
 		SelectPortButton.grid(column=3, row=16,padx=10,sticky='w')
 		
-		RemovePortButton = tk.Button(self.window, background=BG0, text=" Remove ", width=12, command=self.RemoveFromPolicy,font=("Verdana",10))
+		RemovePortButton = tk.Button(self.window, background=BG0, text=" Remove ", width=10, command=self.RemoveFromPolicy,font=("Verdana",10))
 		RemovePortButton.grid(column=3, row=16,padx=30,sticky='e')
 		
 		
@@ -1355,7 +1499,7 @@ class FlowspecGUI(ttk.Frame):
 
 
 	def WithdrawRoutesOneByOne(self):
-		print ("Withdrawing all routes")
+		###-- ("Withdrawing all routes")
 		self.ListOfFlowsOnQuit = []
 		self.ListOfFlowsOnQuit = self.SflowQueuePollOnExit(FlowRouteQueueForQuit)
 		self.progress = ttk.Progressbar(self.popup, orient="horizontal",length=400, mode="determinate")
@@ -1395,11 +1539,10 @@ class FlowspecGUI(ttk.Frame):
 		for DataListString in self.ListOfFlowsOnQuit:
 			index = DataListString.find('source ')
 			command = DataListString[:index] + 'withdraw flow route ' + DataListString[index:]
-			print(command)
 			r = requests.post(exabgpurl, data={'command':command})	
 		
 	def HardExit(self):
-		print ("Withdrawing all routes")
+		###-- ("Withdrawing all routes")
 		for Router in topo_vars['EdgeRouters']:
 			try:
 				print (" \n\n Hard Clearing the Controller BGP peering Session")
@@ -1443,28 +1586,28 @@ class FlowspecGUI(ttk.Frame):
 		popup = ShowSflowPopup(SflowQueue,self.window)
 
 	def ResetDefaultAction(self):
-		self.DefaultRedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-		self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-		self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+		self.DefaultRedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+		self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+		self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 		self.DefaultDummyRad.select()
 		self.defaultaction = ''
 	
 	def SetDefaultAction(self):
 		self.defaultaction = ''
 		if self.selecteddefaultaction.get() == 1:
-			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.DefaultRedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana", 12),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.DefaultRedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 			self.defaultaction = 'discard'
 		elif self.selecteddefaultaction.get() == 2:
-			self.DefaultRedirectIPRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectIPRadLabel.configure(font=("Verdana", 12),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 			self.defaultaction = 'redirect next-hop'
 		elif self.selecteddefaultaction.get() == 3:
-			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-			self.DefaultRedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectVRFRadLabel.configure(font=("Verdana", 12),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.DefaultBlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.DefaultRedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 			self.defaultaction = 'redirect VRF'
 		elif self.selecteddefaultaction.get() == 5:
 			self.defaultaction = ''
@@ -1570,9 +1713,9 @@ class FlowspecGUI(ttk.Frame):
 	
 
 	def ResetFlowPolicyAction(self):
-		self.RedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-		self.RedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-		self.BlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+		self.RedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+		self.RedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+		self.BlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 		self.DummyRad.select()
 		self.action = ''
 		
@@ -1580,19 +1723,19 @@ class FlowspecGUI(ttk.Frame):
 	def SetAction(self):
 		self.action = ''
 		if self.selected.get() == 1:
-			self.BlockTrafficRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.RedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-			self.RedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.BlockTrafficRadLabel.configure(font=("Verdana", 12),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.RedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.RedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 			self.action = 'discard'
 		elif self.selected.get() == 2:
-			self.RedirectIPRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.BlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-			self.RedirectVRFRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.RedirectIPRadLabel.configure(font=("Verdana", 12),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.BlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.RedirectVRFRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 			self.action = 'redirect next-hop'
 		elif self.selected.get() == 3:
-			self.RedirectVRFRadLabel.configure(font=("Verdana", 10,'bold'),justify='left',fg='white',bg='dark green',relief='sunken')
-			self.BlockTrafficRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
-			self.RedirectIPRadLabel.configure(font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+			self.RedirectVRFRadLabel.configure(font=("Verdana", 12),justify='left',fg='white',bg='dark green',relief='sunken')
+			self.BlockTrafficRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
+			self.RedirectIPRadLabel.configure(font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 			self.action = 'redirect VRF'
 		elif self.selected.get() == 5:
 			self.action = ''
@@ -1635,7 +1778,7 @@ class FlowspecGUI(ttk.Frame):
 		self.BandwidthTextBox.configure(bg = 'white')
 		self.FlowPolicyBandwidth = ''
 		self.BandwidthTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
-		self.BandwidthTextBox.insert('1.0','(Hit <enter/return> to set policy bandwidth)')
+		self.BandwidthTextBox.insert('1.0','(Click <enter/return> to set policy bandwidth)')
 		self.BandwidthTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.BandwidthTextBox.tag_configure("boldcentered",justify='center',background='white')
 
@@ -1967,12 +2110,10 @@ class FlowspecGUI(ttk.Frame):
 			try:
 				print (" \n\n Hard Clearing the Controller BGP peering Session")
 				command = 'neighbor '+str(Router['RouterID'])+  ' teardown 2'
-				print (command)
 				r = requests.post(exabgpurl, data={'command': command})
 				time.sleep(.2)
 			except:
 				command = 'restart'
-				print (command)
 				print ("\n\nProblem With ExaBgp Restarting ExaBgp ........\n\n\n")
 		print ("\n\nProgramming Sflow Collector ........\n\n\n")
 		while True:
@@ -2001,6 +2142,7 @@ def SendFlowsToExabgp(queue):
 
 
 if __name__ == '__main__':
+
 
 	ProgramSflowrt()
 	
