@@ -456,7 +456,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		print ("\nApplication Loop Time: "+str(AppRunTimer))
 		print ("\nMax Number of Flows Being Monitored: "+str(MaxSflowEntries))
 		print ("\nDead Flow Removal Timer: "+str(DeadFlowRemovalTimer))
-		print ("\nDead Flow Removal True or False: "+str(DeadFlowRemoval))
+		print ("\nDead Flow Removal 'True' or 'False': "+str(DeadFlowRemoval))
 		print ("\n\nLive Data")
 		print ("----------")
 		print ("Time stamped Dict Length: "+str(len(TimeStampedFlowDict)))
