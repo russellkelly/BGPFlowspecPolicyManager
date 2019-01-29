@@ -239,7 +239,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						try:
 							if CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth,bw):
 								###--("Flow Passed the Check (returned true) and is about to be Programmed")
-								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue)
+								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 								
 								# Add a timestamped version of the DataList
 								if not TimeStampedFlowDict.get(str(DataList)):
@@ -273,7 +273,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 											pass
 		
 									if bw > DefaultBandwidth and DefaultBandwidth != 0 and SortedListOfPolicyUpdates.index(entry) == int(len(SortedListOfPolicyUpdates)-1) and 'None' not in CurrentAction:
-										ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue)
+										ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 										###-- ("Checked all Policies For Flow, Doesn't exist yet, so add it using Default Policy")
 										
 										# Add a timestamped version of the DataList
@@ -296,12 +296,12 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						except:
 							pass
 
-							# This means the Source Port or Destination port is not in this policy (or we got a Fasle)
+							# This means the Source Port or Destination port is not in this policy (or we got a False)
 							
 						try:
 							if not CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth,bw) and str(DataList) in FlowActionDict.keys() and SortedListOfPolicyUpdates.index(entry) == int(len(SortedListOfPolicyUpdates)-1):
 								###--("Returned False  - No Source or Destination Port in the source or destination portlist - removing the flow")
-								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
+								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 								FlowActionDict.pop(str(DataList),None)
 								ListOfFlows.remove(DataList)
 								TimeStampedFlowDict.pop(str(DataList),None)
@@ -313,7 +313,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						try:
 						
 							if bw < DefaultBandwidth:
-								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
+								ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 								FlowActionDict.pop(str(DataList),None)
 								ListOfFlows.remove(DataList)
 								TimeStampedFlowDict.pop(str(DataList),None)
@@ -342,7 +342,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						PolicyBandwidth = DefaultBandwidth
 						if bw > DefaultBandwidth:
 							if 'None' not in CurrentAction:
-								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue)
+								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 								###--("BW > default, and there is an action.  So program the flow (using local function ProgramFlowPolicies")
 								
 								# Add a timestamped version of the DataList
@@ -359,7 +359,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 									TimeStampedFlowDict[str(DataList)]=datetime.now()
 						
 						if DataList in ListOfFlows and 'None' in CurrentAction:
-							ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
+							ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 							FlowActionDict.pop(str(DataList),None)
 							ListOfFlows.remove(DataList)
 							TimeStampedFlowDict.pop(str(DataList),None)
@@ -367,7 +367,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 							###--("Theres a None I have to remove - Use ExabgpWithdraw so the activeflowlist is updated")
 							
 						if DataList in ListOfFlows and bw < DefaultBandwidth:
-							ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
+							ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 							FlowActionDict.pop(str(DataList),None)
 							ListOfFlows.remove(DataList)
 							TimeStampedFlowDict.pop(str(DataList),None)
@@ -396,13 +396,14 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 			pass
 
 		# Remove Flows from the DeadFlowList
+
 		if DeadFlowRemoval == str('True'):
 			if deadflowcount >= (DeadFlowRemovalTimer):
 				try:
 					for Entry in DeadSflowList:
 						try:
 							ListOfFlows.remove(Entry)
-							ExabgpAndQueueCalls.ExaBgpWithdraw(str(Entry[0]),str(Entry[1]),str(Entry[2]),str(Entry[3]),str(Entry[5]),str(Entry[6]),FlowActionDict.get(str(Entry)),ExaBGPQueue)
+							ExabgpAndQueueCalls.ExaBgpWithdraw(str(Entry[0]),str(Entry[1]),str(Entry[2]),str(Entry[3]),str(Entry[5]),str(Entry[6]),FlowActionDict.get(str(Entry)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 							FlowActionDict.pop(str(Entry),None)
 						except:
 							pass
@@ -418,7 +419,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		if SortedListOfPolicyUpdates == [] and DefaultBandwidth == 0 and len(ListOfFlows) != 0:
 			###-- ("Withdrawing all routes - No Policies at all matching.   All active routes will be withdrawn one by one")
 			for DataList in ListOfFlows:
-				ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
+				ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 				FlowActionDict.pop(str(DataList),None)
 				ListOfFlows.remove(DataList)
 
@@ -464,7 +465,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		print ("\nList of Flows Length: "+str(len(ListOfFlows)))
 		print ("\nFlow Action Dict Length: "+str(len(FlowActionDict)))
 		
-
+		
 		time.sleep(AppRunTimer)
 		
 		
@@ -622,27 +623,26 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 	
 
 
-def ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue):
+def ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList):
 	try:
-
 		if len(ListOfFlows) == 0:
 			ListOfFlows.append(DataList)
 			FlowActionDict[str(DataList)]=CurrentAction
-			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),CurrentAction,ExaBGPQueue)
+			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 			###--("Length List of flows 0 , added the flow and Dict Entry")
 		elif FlowActionDict.get(str(DataList)) != None and FlowActionDict.get(str(DataList)) != CurrentAction:
-			ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
+			ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 			FlowActionDict.pop(str(DataList),None)
 			ListOfFlows.remove(DataList)
 			###--("Popped the dict entry and List")
 			ListOfFlows.append(DataList)
 			FlowActionDict[str(DataList)]=CurrentAction
-			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),CurrentAction,ExaBGPQueue)
+			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 			###--("Added flow and Dict entry and list")
 		elif DataList not in ListOfFlows:
 			ListOfFlows.append(DataList)
 			FlowActionDict[str(DataList)]=CurrentAction
-			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue)
+			ExabgpAndQueueCalls.ExaBgpAnnounce(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 			###--("Hit the else, added the flow and Dict Entry")
 		else:
 			if DataList in ListOfFlows:
@@ -689,13 +689,26 @@ class FindAndProgramDdosFlowsHelperClass(object):
 	def __init__(self):
 	    self.ActiveFlowspecRoutes = []
 
-	def ExaBgpAnnounce(self, ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action,ExaBGPQueue):
+	def ExaBgpAnnounce(self, ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList):
 		if protocol == '1':
-			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
-			#Put in the queue for Programming
-			ExaBGPQueue.put_nowait(command)
-			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
-			self.ActiveFlowspecRoutes.append(command)
+			if CurrentConfiguredDestinationProtocolPortList == []:
+				command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
+				#Put in the queue for Programming
+				ExaBGPQueue.put_nowait(command)
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				self.ActiveFlowspecRoutes.append(command)
+			elif CurrentConfiguredSourceProtocolPortList == []:
+				command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + destinationport + '] '  + action
+				#Put in the queue for Programming
+				ExaBGPQueue.put_nowait(command)
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				self.ActiveFlowspecRoutes.append(command)			
+			else:
+				command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '   + action
+				#Put in the queue for Programming
+				ExaBGPQueue.put_nowait(command)
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				self.ActiveFlowspecRoutes.append(command)
 		else:
 			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
 			#Put in the queue for Programming
@@ -703,13 +716,26 @@ class FindAndProgramDdosFlowsHelperClass(object):
 			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
 			self.ActiveFlowspecRoutes.append(command)
 	
-	def ExaBgpWithdraw(self,ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action,ExaBGPQueue):
+	def ExaBgpWithdraw(self,ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList):
 		if protocol == '1':
-			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
-			#Put in the queue for Programming
-			ExaBGPQueue.put_nowait(command)
-			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
-			self.ActiveFlowspecRoutes.remove(command)			
+			if CurrentConfiguredDestinationProtocolPortList == []:
+				command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
+				#Put in the queue for Programming
+				ExaBGPQueue.put_nowait(command)
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				self.ActiveFlowspecRoutes.remove(command)
+			elif CurrentConfiguredSourceProtocolPortList == []:
+				command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']'  ' icmp-type [=' + destinationport + '] '  + action
+				#Put in the queue for Programming
+				ExaBGPQueue.put_nowait(command)
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				self.ActiveFlowspecRoutes.remove(command)				
+			else:
+				command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				#Put in the queue for Programming
+				ExaBGPQueue.put_nowait(command)
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				self.ActiveFlowspecRoutes.remove(command)
 		else:
 			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
 			#Put in the queue for Programming
@@ -770,11 +796,11 @@ class ShowFlowspecRoutesPopup(object):
 		self.popup.lift()
 		self.NumberOfFlowRoutes = 0
 		self.popup.title("Active Flowspec Rules Programmed on Edge Routers")
-		self.TitleLabel=tk.Label(self.popup,text="### Active Flowspec Rules Programmed on Edge Routers###\n",font=("Verdana", 20),justify='left')
+		self.TitleLabel=tk.Label(self.popup,text="### Active Flowspec Rules Programmed on Edge Routers###\n",font=("Verdana", 16),justify='left')
 		self.TitleLabel.grid(column=0, row=0,columnspan=3, sticky='n')
-		self.FlowCount=tk.Label(self.popup,text='Number of Active Flow Routes '+str(self.NumberOfFlowRoutes)+'\n',font=("Verdana", 16),justify='center')
+		self.FlowCount=tk.Label(self.popup,text='Number of Active Flow Routes '+str(self.NumberOfFlowRoutes)+'\n',font=("Verdana", 14),justify='center')
 		self.FlowCount.grid(column=0, row=1,columnspan=3, sticky='new')
-		self.text_wid = tk.Text(self.popup,relief = 'raised', height=20,width=140,borderwidth=3)
+		self.text_wid = tk.Text(self.popup,relief = 'raised', height=20,width=130,borderwidth=3)
 		self.text_wid.insert('end','Neighbor		Source			Destination			Protocol		Source Port		Destination Port		Active Action\n\n')
 		self.scroll = tk.Scrollbar(self.popup, command=self.text_wid.yview)
 		self.text_wid.grid(column=0, columnspan=3,row=2,sticky='nswe', padx=10, pady=5)
@@ -794,12 +820,12 @@ class ShowFlowspecRoutesPopup(object):
 				for r in (('neighbor ',''),(' source-port ',''), (' destination-port ',''),(' source ','		'), (' destination ','			'), ('protocol ','			'),('[',''),(']','		')):
 					line = line.replace(*r)
 				self.text_wid.insert('end', line+'\n')
-			self.FlowCount=tk.Label(self.popup,text='Number of Active Flow Routes '+str(self.NumberOfFlowRoutes)+'\n',font=("Verdana", 16),justify='center')
+			self.FlowCount=tk.Label(self.popup,text='Number of Active Flow Routes '+str(self.NumberOfFlowRoutes)+'\n',font=("Verdana", 14),justify='center')
 			self.FlowCount.grid(column=0, row=1,columnspan=3, sticky='new')
 		except Empty:
 			pass
 		finally:
-			self.text_wid.configure(bg ='dark blue',fg = 'white',font=("Verdana", 12, 'bold'))
+			self.text_wid.configure(bg ='dark blue',fg = 'white',font=("Verdana", 10, 'bold'))
 			self.popup.after(500, self.FlowRouteQueuePoll, c_queue)
 			
 	def cleanup(self):
@@ -818,9 +844,9 @@ class ShowSflowPopup(object):
 		self.popup.lift()
 		self.NumberOfFlows = 0
 		self.popup.title("Active Inspected sFlow Records From Edge Routers")
-		self.TitleLabel=tk.Label(self.popup,text="### Active Inspected sFlow Records From Edge Routers###\n",font=("Verdana", 20),justify='center')
+		self.TitleLabel=tk.Label(self.popup,text="### Active Inspected sFlow Records From Edge Routers###\n",font=("Verdana", 16),justify='center')
 		self.TitleLabel.grid(column=0, row=0,columnspan=3, sticky='n')
-		self.FlowCount=tk.Label(self.popup,text='Number of Active Flows '+str(self.NumberOfFlows)+'\n',font=("Verdana", 16),justify='center')
+		self.FlowCount=tk.Label(self.popup,text='Number of Active Flows '+str(self.NumberOfFlows)+'\n',font=("Verdana", 14),justify='center')
 		self.FlowCount.grid(column=0, row=1,columnspan=3, sticky='new')
 		self.text_wid = tk.Text(self.popup,relief = 'raised', height=20,width=130,borderwidth=3)
 		self.text_wid.insert('end', 'Router		Protocol		Source-IP		SourcePort		Source Intf-ID		Destination-IP		DestinationPort		Bandwidth\n\n')
@@ -841,12 +867,12 @@ class ShowSflowPopup(object):
 				self.NumberOfFlows += 1
 				line = '		'.join(line)
 				self.text_wid.insert('end', str(line) + '\n')
-			self.FlowCount=tk.Label(self.popup,text='Number of Active Flows '+str(self.NumberOfFlows)+'\n',font=("Verdana", 16),justify='center')
+			self.FlowCount=tk.Label(self.popup,text='Number of Active Flows '+str(self.NumberOfFlows)+'\n',font=("Verdana", 14),justify='center')
 			self.FlowCount.grid(column=0, row=1,columnspan=3, sticky='ew')			
 		except Empty:
 			pass
 		finally:
-			self.text_wid.configure(bg = 'dark blue',fg = 'white',font=("Verdana", 12,'bold'))
+			self.text_wid.configure(bg = 'dark blue',fg = 'white',font=("Verdana", 10,'bold'))
 			self.popup.after(500, self.SflowQueuePoll, c_queue)
 				
 	def cleanup(self):
