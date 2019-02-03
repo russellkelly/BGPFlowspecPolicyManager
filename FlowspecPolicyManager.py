@@ -54,6 +54,7 @@ sflowIP=str(topo_vars['sflow_rt_ip'])
 ExabgpIP=str(topo_vars['exabgp_ip'])
 SflowMultiplier=int(topo_vars['SflowMultiplier'])
 AppRunTimer=int(topo_vars['AppRunWaitTime'])
+FlowPopUpRefreshInterval = int(topo_vars['FlowPopUpRefreshInterval'])
 MaxSflowEntries=str(topo_vars['MaxSflowEntries'])
 DeadSflowTimer=str(topo_vars['SflowDeadTimer'])
 DeadFlowRemovalTimer=int(topo_vars['DeadSflowRemovalWaitTime'])
@@ -458,6 +459,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		print ("\nMax Number of Flows Being Monitored: "+str(MaxSflowEntries))
 		print ("\nDead Flow Removal Timer: "+str(DeadFlowRemovalTimer))
 		print ("\nDead Flow Removal 'True' or 'False': "+str(DeadFlowRemoval))
+		print ("\nFlow PopUp Window Refresh Interval: "+str(FlowPopUpRefreshInterval))
 		print ("\n\nLive Data")
 		print ("----------")
 		print ("Time stamped Dict Length: "+str(len(TimeStampedFlowDict)))
@@ -788,6 +790,7 @@ class FindAndProgramDdosFlowsHelperClass(object):
 
 class ShowFlowspecRoutesPopup(object):
 	def __init__(self,FlowRouteQueue,ParentWindow):
+		global FlowPopUpRefreshInterval
 		self.popup = tk.Toplevel(ParentWindow)
 		self.popup.grid_columnconfigure(0, weight=1)
 		self.popup.grid_rowconfigure(2, weight=1)
@@ -826,7 +829,7 @@ class ShowFlowspecRoutesPopup(object):
 			pass
 		finally:
 			self.text_wid.configure(bg ='dark blue',fg = 'white',font=("Verdana", 10, 'bold'))
-			self.popup.after(500, self.FlowRouteQueuePoll, c_queue)
+			self.popup.after((FlowPopUpRefreshInterval*1000), self.FlowRouteQueuePoll, c_queue)
 			
 	def cleanup(self):
 		self.popup.destroy()
@@ -835,6 +838,7 @@ class ShowFlowspecRoutesPopup(object):
 
 class ShowSflowPopup(object):
 	def __init__(self,SflowQueue,ParentWindow):
+		global FlowPopUpRefreshInterval
 		self.popup = tk.Toplevel(ParentWindow)
 		height = ParentWindow.winfo_height()/2
 		width = ParentWindow.winfo_width()
@@ -873,7 +877,7 @@ class ShowSflowPopup(object):
 			pass
 		finally:
 			self.text_wid.configure(bg = 'dark blue',fg = 'white',font=("Verdana", 10,'bold'))
-			self.popup.after(500, self.SflowQueuePoll, c_queue)
+			self.popup.after((FlowPopUpRefreshInterval*1000), self.SflowQueuePoll, c_queue)
 				
 	def cleanup(self):
 		self.popup.destroy()		
@@ -1176,7 +1180,7 @@ class FlowspecGUI(ttk.Frame):
 		
 		# ---------------- ROW-0 ---------------#
 		
-		TitleLabel=tk.Label(self.window,font=("Verdana", 16),background='light grey', relief='ridge',text="DDoS Flow Policy Management Using BGP Flowspec")
+		TitleLabel=tk.Label(self.window,font=("Verdana", 16),background='light grey', relief='ridge',text="BGP Flowspec Policy Management")
 		TitleLabel.grid(row=0,columnspan=5, sticky='nswe')
 		
 		# ---------------- ROW-1 ---------------#

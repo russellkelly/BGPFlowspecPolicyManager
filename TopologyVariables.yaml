@@ -62,25 +62,29 @@ exabgp_port: 5000
 
 ###############################################################################
 #  Application run timer for determining DDOS flows. Default 5 seconds
-#  Poll time multiplier for getting sflow Statistics (default 3, so 15 seconds)
+#  Time between refreshing the Floe Route and Flow Record Popup page.  Default 5
+#  seconds.  Usefule @ 5 seconds when flows >10,000
+#  Poll time multiplier for getting sflow Statistics (default 1, so 5 seconds)
 #  Number of sflow entries to poll (default 4000)
-#  Time Before Sflow Records Consideredd "Dead" and tagged for removal
-#  Extra time to wait before removing Flows
+#  Time to wait before Sflow Records are considered "Dead" and tagged for removal
+#  Extra time to wait before actually removing Flows
 #  If DeadFlowRemoval set to "True" flows are removed.  For scale testing where
-#  the flows are not refreshed often set this boolean to "False".
-#  One can also increase the Sflow Dead Timer to stop churn
+#  the flows are not refreshed often set this Boolean to "False". False - Used
+#  for Scale testing
 ###############################################################################
 
 AppRunWaitTime: 5
-SflowMultiplier: 3
+SflowMultiplier: 1
+FlowPopUpRefreshInterval: 5
 MaxSflowEntries: 4000
-SflowDeadTimer: 60
+SflowDeadTimer: 300
 DeadSflowRemovalWaitTime: 5
 DeadFlowRemoval: True
 
+
 ###############################################################################
 # Ports and Protocols to inspect For the Policy Manager
-# These can be added to/removed from whne the application is running, to
+# These can be added to/removed from when the application is running, to
 # provide more selections in the UI drop down list
 ###############################################################################
 
