@@ -55,7 +55,7 @@ RUN sudo mkdir -p /var/run/sshd
 WORKDIR /home/flowspec
 RUN git clone https://github.com/Exa-Networks/exabgp.git
 WORKDIR /home/flowspec/exabgp
-RUN git checkout master
+RUN git checkout 4.0.10
 RUN chmod +x setup.py
 RUN sudo ./setup.py install
 WORKDIR /home/flowspec
