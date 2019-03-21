@@ -5,6 +5,11 @@ import os
 import re
 import json
 import requests
+try:
+	import win_inet_pton
+except:
+	pass
+import socket
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import threading
@@ -73,10 +78,16 @@ for entry in topo_vars['IPProtocol']:
 
 NHVRFDict = {}
 NHIPDict = {}
+NHIP6Dict = {}
 
 try:
 	for Router in topo_vars['EdgeRouters']:
 		NHIPDict[Router['RouterID']]=Router['IPNH']
+except:
+	pass
+try:
+	for Router in topo_vars['EdgeRouters']:
+		NHIP6Dict[Router['RouterID']]=Router['IP6NH']
 except:
 	pass
 try:
@@ -89,8 +100,7 @@ PortList = []						# Example Format: PortList = ['TCP-80','UDP-53', 'TCP-445','T
 for entry in topo_vars['PortList']:
 	PortList.append(entry)
 
-ipflow = {'keys':'agent,ipprotocol,ipsource,or:tcpsourceport:udpsourceport:icmptype,inputifindex,ipdestination,or:tcpdestinationport:udpdestinationport:icmpcode', 'value':'bytes'}
-
+ipflow = {'keys':'agent,or:ip6nexthdr:ipprotocol,or:ipsource:ip6source,or:tcpsourceport:udpsourceport:icmptype:icmp6type,inputifindex,or:ipdestination:ip6destination,or:tcpdestinationport:udpdestinationport:icmpcode:icmp6code', 'value':'bytes'}
 
 
 
@@ -152,7 +162,16 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		try:
 			ManualRoute = ExabgpAndQueueCalls.ManualRouteQueuePoll(ManualRouteQueue)
 			if str(ManualRoute[7]) == 'redirect next-hop':
-				Action = 'redirect '+str(NHIPDict[str(ManualRoute[0])])
+				if is_valid_ipv4_address(str(ManualRoute[1])):
+					try:
+						Action = 'redirect '+str(NHIPDict[str(ManualRoute[0])])
+					except:
+						pass
+				if is_valid_ipv6_address(str(ManualRoute[1])):
+					try:
+						Action = 'redirect '+str(NHIP6Dict[str(ManualRoute[0])])
+					except:
+						pass
 			elif str(ManualRoute[7]) == 'redirect VRF':
 				Action = 'redirect '+str(NHVRFDict[str(ManualRoute[0])])
 			elif str(ManualRoute[7]) == 'discard':
@@ -225,10 +244,16 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						if entry[0] == 'discard':
 							CurrentAction = entry[0]
 						elif entry[0] == 'redirect next-hop':
-							try:
-								CurrentAction = 'redirect '+str(NHIPDict.get(str(DataList[0])))
-							except:
-								pass
+							if is_valid_ipv4_address(str(DataList[2])):
+								try:
+									CurrentAction = 'redirect '+str(NHIPDict.get(str(DataList[0])))
+								except:
+									pass
+							if is_valid_ipv6_address(str(DataList[2])):
+								try:
+									CurrentAction = 'redirect '+str(NHIP6Dict.get(str(DataList[0])))
+								except:
+									pass
 						elif entry[0] == 'redirect VRF':
 							try:
 								CurrentAction = 'redirect '+str(NHVRFDict.get(str(DataList[0])))
@@ -237,6 +262,7 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						PolicyBandwidth = entry[1]
 						CurrentConfiguredSourceProtocolPortList = GetPortList(entry[2])
 						CurrentConfiguredDestinationProtocolPortList = GetPortList(entry[3])
+
 						try:
 							if CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList,CurrentAction,PolicyBandwidth,bw):
 								###--("Flow Passed the Check (returned true) and is about to be Programmed")
@@ -272,7 +298,6 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 											CurrentAction = 'redirect '+str(NHVRFDict.get(str(DataList[0])))
 										except:
 											pass
-		
 									if bw > DefaultBandwidth and DefaultBandwidth != 0 and SortedListOfPolicyUpdates.index(entry) == int(len(SortedListOfPolicyUpdates)-1) and 'None' not in CurrentAction:
 										ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 										###-- ("Checked all Policies For Flow, Doesn't exist yet, so add it using Default Policy")
@@ -331,10 +356,16 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						if DefaultAction == 'discard':
 							CurrentAction = DefaultAction
 						elif DefaultAction == 'redirect next-hop':
-							try:
-								CurrentAction = 'redirect '+str(NHIPDict.get(str(DataList[0])))
-							except:
-								pass
+							if is_valid_ipv4_address(str(DataList[2])):
+								try:
+									CurrentAction = 'redirect '+str(NHIPDict.get(str(DataList[0])))
+								except:
+									pass
+							if is_valid_ipv6_address(str(DataList[2])):
+								try:
+									CurrentAction = 'redirect '+str(NHIP6Dict.get(str(DataList[0])))
+								except:
+									pass
 						elif DefaultAction == 'redirect VRF':
 							try:
 								CurrentAction = 'redirect '+str(NHVRFDict.get(str(DataList[0])))
@@ -343,8 +374,16 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 						PolicyBandwidth = DefaultBandwidth
 						if bw > DefaultBandwidth:
 							if 'None' not in CurrentAction:
-								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
+								try:
+									CurrentConfiguredSourceProtocolPortList = GetPortList(entry[2])
+								except:
+									CurrentConfiguredSourceProtocolPortList = []
+								try:
+									CurrentConfiguredDestinationProtocolPortList = GetPortList(entry[3])
+								except:
+									CurrentConfiguredDestinationProtocolPortList = []
 								###--("BW > default, and there is an action.  So program the flow (using local function ProgramFlowPolicies")
+								ProgramFlowPolicies(DataList,ListOfFlows,FlowActionDict,ExabgpAndQueueCalls,CurrentAction,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 								
 								# Add a timestamped version of the DataList
 								if not TimeStampedFlowDict.get(str(DataList)):
@@ -470,12 +509,34 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 		
 		
 		time.sleep(AppRunTimer)
+
+def is_valid_ipv4_address(sourceaddress):
+	try:
+		socket.inet_pton(socket.AF_INET, sourceaddress)
+	except AttributeError:  # no inet_pton here, sorry
+		try:
+			socket.inet_aton(sourceaddress)
+		except socket.error:
+			return False
+		return sourceaddress.count('.') == 3
+	except socket.error:  # not a valid address
+		return False
+
+	return True
+
+def is_valid_ipv6_address(sourceaddress):
+	try:
+		socket.inet_pton(socket.AF_INET6, sourceaddress)
+	except socket.error:  # not a valid address
+		return False
+	return True
 		
 		
 def RenderTopologyVariables():
 	# Updating for the main Program
 	global NHVRFDict
 	global NHIPDict
+	global NHIP6Dict
 	global SflowMultiplier
 	global AppRunTimer
 	global DeadSflowTimer
@@ -501,6 +562,11 @@ def RenderTopologyVariables():
 	try:
 		for Router in topo_vars['EdgeRouters']:
 			NHVRFDict[Router['RouterID']]=Router['VRF']
+	except:
+		pass
+	try:
+		for Router in topo_vars['EdgeRouters']:
+			NHIP6Dict[Router['RouterID']]=Router['IP6NH']
 	except:
 		pass
 	try:
@@ -667,6 +733,11 @@ def GetPortList(PortList):
 	for entry in PortList:
 		for protocol in ProtocolList:
 			try:
+				if 'ICMPv6' in entry:
+					PortProtocol.append(str(protocol[entry.split(' ')[0]])+':'+str(entry.split('=')[1]))				
+			except:
+				pass
+			try:
 				if 'ICMP' in entry:
 					PortProtocol.append(str(protocol[entry.split(' ')[0]])+':'+str(entry.split('=')[1]))				
 			except:
@@ -693,58 +764,135 @@ class FindAndProgramDdosFlowsHelperClass(object):
 	    self.ActiveFlowspecRoutes = []
 
 	def ExaBgpAnnounce(self, ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList):
-		if protocol == '1':
-			if CurrentConfiguredDestinationProtocolPortList == []:
-				command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
-				#Put in the queue for Programming
-				ExaBGPQueue.put_nowait(command)
-				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
-				self.ActiveFlowspecRoutes.append(command)
-			elif CurrentConfiguredSourceProtocolPortList == []:
-				command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + destinationport + '] '  + action
-				#Put in the queue for Programming
-				ExaBGPQueue.put_nowait(command)
-				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
-				self.ActiveFlowspecRoutes.append(command)			
+		if self.is_valid_ipv4_address(sourceprefix):
+			if protocol == '1':
+				if CurrentConfiguredDestinationProtocolPortList == []:
+					command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.append(command)
+				elif CurrentConfiguredSourceProtocolPortList == []:
+					command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + destinationport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.append(command)			
+				else:
+					command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '   + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.append(command)
 			else:
-				command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '   + action
+				command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
 				#Put in the queue for Programming
 				ExaBGPQueue.put_nowait(command)
-				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
 				self.ActiveFlowspecRoutes.append(command)
-		else:
-			command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
-			#Put in the queue for Programming
-			ExaBGPQueue.put_nowait(command)
-			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
-			self.ActiveFlowspecRoutes.append(command)
+				
+		if self.is_valid_ipv6_address(sourceprefix):
+			if protocol == '58':
+				if CurrentConfiguredDestinationProtocolPortList == []:
+					command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.append(command)
+				elif CurrentConfiguredSourceProtocolPortList == []:
+					command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + destinationport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.append(command)			
+				else:
+					command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '   + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.append(command)
+			else:
+				command = 'neighbor ' + ler + ' announce flow route ' 'source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
+				#Put in the queue for Programming
+				ExaBGPQueue.put_nowait(command)
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' + action
+				self.ActiveFlowspecRoutes.append(command)
 	
 	def ExaBgpWithdraw(self,ler,protocol,sourceprefix,sourceport,destinationprefix,destinationport,action,ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList):
-		if protocol == '1':
-			if CurrentConfiguredDestinationProtocolPortList == []:
-				command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
-				#Put in the queue for Programming
-				ExaBGPQueue.put_nowait(command)
-				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
-				self.ActiveFlowspecRoutes.remove(command)
-			elif CurrentConfiguredSourceProtocolPortList == []:
-				command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']'  ' icmp-type [=' + destinationport + '] '  + action
-				#Put in the queue for Programming
-				ExaBGPQueue.put_nowait(command)
-				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
-				self.ActiveFlowspecRoutes.remove(command)				
+		if self.is_valid_ipv4_address(sourceprefix):
+			if protocol == '1':
+				if CurrentConfiguredDestinationProtocolPortList == []:
+					command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.remove(command)
+				elif CurrentConfiguredSourceProtocolPortList == []:
+					command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']'  ' icmp-type [=' + destinationport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.remove(command)				
+				else:
+					command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.remove(command)
 			else:
-				command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
 				#Put in the queue for Programming
 				ExaBGPQueue.put_nowait(command)
-				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
 				self.ActiveFlowspecRoutes.remove(command)
-		else:
-			command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
-			#Put in the queue for Programming
-			ExaBGPQueue.put_nowait(command)
-			command = 'neighbor ' + ler + ' source '+ sourceprefix + '/32 ' 'destination ' + destinationprefix + '/32'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
-			self.ActiveFlowspecRoutes.remove(command)
+				
+		if self.is_valid_ipv6_address(sourceprefix):
+			if protocol == '58':
+				if CurrentConfiguredDestinationProtocolPortList == []:
+					command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.remove(command)
+				elif CurrentConfiguredSourceProtocolPortList == []:
+					command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']'  ' icmp-type [=' + destinationport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.remove(command)				
+				else:
+					command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					#Put in the queue for Programming
+					ExaBGPQueue.put_nowait(command)
+					command = 'neighbor ' + ler + ' source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'+ ' protocol ' '['+ protocol +']' ' icmp-type [=' + sourceport + ']' ' icmp-type [=' + destinationport + '] '  + action
+					self.ActiveFlowspecRoutes.remove(command)
+			else:
+				command = 'neighbor ' + ler + ' withdraw flow route ' 'source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
+				#Put in the queue for Programming
+				ExaBGPQueue.put_nowait(command)
+				command = 'neighbor ' + ler + ' source '+ sourceprefix + '/128 ' 'destination ' + destinationprefix + '/128'  + ' protocol ' '['+ protocol +']' ' source-port [=' + sourceport + ']' ' destination-port [=' + destinationport + '] ' +  action
+				self.ActiveFlowspecRoutes.remove(command)
+
+	def is_valid_ipv4_address(self,address):
+		try:
+			socket.inet_pton(socket.AF_INET, address)
+		except AttributeError:  # no inet_pton here, sorry
+			try:
+				socket.inet_aton(address)
+			except socket.error:
+				return False
+			return address.count('.') == 3
+		except socket.error:  # not a valid address
+			return False
+	
+		return True
+	
+	def is_valid_ipv6_address(self,address):
+		try:
+			socket.inet_pton(socket.AF_INET6, address)
+		except socket.error:  # not a valid address
+			return False
+		return True
 
 
 	
@@ -1490,6 +1638,11 @@ class FlowspecGUI(ttk.Frame):
 		try:
 			for Router in topo_vars['EdgeRouters']:
 				NHIPDict[Router['RouterID']]=Router['IPNH']
+		except:
+			pass
+		try:
+			for Router in topo_vars['EdgeRouters']:
+				NHIP6Dict[Router['RouterID']]=Router['IP6NH']
 		except:
 			pass
 		try:

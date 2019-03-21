@@ -41,10 +41,12 @@ EdgeRouters:
     AS: *****
     VRF: ***:***
     IPNH: ***.***.***.***
+    IP6NH: ****.****.****.****.****.****.****.****
   - RouterID: ***.***.***.***
     AS: *****
     VRF: ***:***
     IPNH: ***.***.***.***
+    IP6NH: ****.****.****.****.****.****.****.****
 
 ###############################################################################
 # If you are using the containerized sflow-rt and Exabgp processes then the
@@ -93,6 +95,7 @@ IPProtocol:
   - TCP: 6
   - UDP: 17
   - ICMP: 1
+  - ICMPv6: 58
 
 PortList:
   - TCP=0
@@ -127,6 +130,13 @@ PortList:
   - ICMP Dest-Unreach=3
   - ICMP Time-Exceeded=11
   - ICMP Time-Stamp=13
+  - ICMPv6 Echo-Request=128
+  - ICMPv6 Echo-Reply=129
+  - ICMPv6 Time-Exceeded=3
+  - ICMPv6 Router-Solicitation=133
+  - ICMPv6 Router-Advertisement=134
+  - ICMPv6 Neighbor-Solicitation=135
+  - ICMPv6 Neighbor-Advertisement=136
 
 
 
