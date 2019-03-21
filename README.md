@@ -59,6 +59,7 @@ The commands to install on Windows (after installing Python 2.7.15) are below:
         python -m pip install requests
         python -m pip install pyyaml
         python -m pip install schedule
+        python -m pip install win-inet-pton (needed on Windows only)
 
 Similar commands can be run in Mac OSX or Linux using brew or apt-get.
 
