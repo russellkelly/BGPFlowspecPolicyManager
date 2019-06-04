@@ -25,10 +25,9 @@ RUN pip install --upgrade pip
 RUN pip install pyyaml --upgrade
 RUN apt-get update -y
 RUN apt-get install software-properties-common -y
-RUN add-apt-repository ppa:webupd8team/java -y
 RUN apt-get update
+RUN apt-get install -qy default-jre
 RUN echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
-RUN apt-get install -qy oracle-java8-installer
 RUN apt-get clean
 RUN pip install flask
 RUN pip install pyeapi
