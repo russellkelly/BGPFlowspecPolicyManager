@@ -703,7 +703,7 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 			except:
 				pass
 			try:	
-				if int(DataList[3]) < int(DestinationLessThanDict.get(DataList[1])) and DataList[1] in DestinationLessThanDict.keys():
+				if int(DataList[6]) < int(DestinationLessThanDict.get(DataList[1])) and DataList[1] in DestinationLessThanDict.keys():
 					###--("Just Check Destination Less Than Port and protocol")
 					return True
 				else:
@@ -711,7 +711,7 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 			except:
 				pass
 			try:	
-				if int(DataList[3]) > int(DestinationGreaterThanDict.get(DataList[1])) and DataList[1] in DestinationGreaterThanDict.keys():
+				if int(DataList[6]) > int(DestinationGreaterThanDict.get(DataList[1])) and DataList[1] in DestinationGreaterThanDict.keys():
 					###--("Just Check Destination Greater Than Port and protocol")
 					return True
 				else:
