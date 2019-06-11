@@ -687,32 +687,32 @@ def CheckPolicy(DataList,CurrentConfiguredSourceProtocolPortList,CurrentConfigur
 			except:
 				pass
 			try:	
-				if int(DataList[3]) > int(SourceGreaterThanDict.get(DataList[1])):
-					###--("Just Check Source Greater Than Port")
+				if int(DataList[3]) > int(SourceGreaterThanDict.get(DataList[1])) and DataList[1] in SourceGreaterThanDict.keys():
+					###--("Just Check Source Greater Than Port and protocol")
 					return True
 				else:
 					pass
 			except:
 				pass
 			try:	
-				if int(DataList[3]) < int(SourceLessThanDict.get(DataList[1])):
-					###--("Just Check Source Less Than Port")
+				if int(DataList[3]) < int(SourceLessThanDict.get(DataList[1])) and DataList[1] in SourceLessThanDict.keys():
+					###--("Just Check Source Less Than Port and protocol")
 					return True
 				else:
 					pass
 			except:
 				pass
 			try:	
-				if int(DataList[3]) < int(DestinationLessThanDict.get(DataList[1])):
-					###--("Just Check Destination Less Than Port")
+				if int(DataList[3]) < int(DestinationLessThanDict.get(DataList[1])) and DataList[1] in DestinationLessThanDict.keys():
+					###--("Just Check Destination Less Than Port and protocol")
 					return True
 				else:
 					pass
 			except:
 				pass
 			try:	
-				if int(DataList[3]) > int(DestinationGreaterThanDict.get(DataList[1])):
-					###--("Just Check Destination Greater Than Port")
+				if int(DataList[3]) > int(DestinationGreaterThanDict.get(DataList[1])) and DataList[1] in DestinationGreaterThanDict.keys():
+					###--("Just Check Destination Greater Than Port and protocol")
 					return True
 				else:
 					###--("Source port or Destination Port is not in any configured Policy -> Returning False")
