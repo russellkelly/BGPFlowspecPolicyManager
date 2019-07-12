@@ -2517,7 +2517,7 @@ class ProgramFlowSpecRuleClass(object):
 		
 		self.SourcePortTextBox = tk.Text(self.manualroutewindow, background=BG0, height = 1, width = 30, borderwidth=1, relief="ridge")
 		self.SourcePortTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
-		self.SourcePortTextBox.insert('1.0','<Source Port(s)>')
+		self.SourcePortTextBox.insert('1.0','<Source Port(s)> (a,b,d-f,>g,<h)')
 		self.SourcePortTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.SourcePortTextBox.tag_configure("boldcentered",justify='center',background='white')
 		self.SourcePortTextBox.bind("<Button-1>", self.SetSourcePortTextBoxFocus)
@@ -2526,9 +2526,9 @@ class ProgramFlowSpecRuleClass(object):
 		self.SourcePortTextBox.bind("<FocusIn>", self.SetSourcePortTextBoxFocus)
 		self.SourcePortTextBox.grid(column=5, row=2, padx=5)
 
-		self.DestinationPortTextBox = tk.Text(self.manualroutewindow, background=BG0, height = 1, width = 30, borderwidth=1, relief="ridge")
+		self.DestinationPortTextBox = tk.Text(self.manualroutewindow, background=BG0, height = 1, width = 35, borderwidth=1, relief="ridge")
 		self.DestinationPortTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
-		self.DestinationPortTextBox.insert('1.0','<Destination Port(s)>')
+		self.DestinationPortTextBox.insert('1.0','<Destination Port(s)> (a,b,d-f,>g,<h)')
 		self.DestinationPortTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.DestinationPortTextBox.tag_configure("boldcentered",justify='center',background='white')
 		self.DestinationPortTextBox.bind("<Button-1>", self.SetDestinationPortTextBoxFocus)
@@ -2876,7 +2876,7 @@ class ProgramFlowSpecRuleClass(object):
 		self.SourcePortTextBox.configure(bg = 'white')
 		self.SourcePort = ''
 		self.SourcePortTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
-		self.SourcePortTextBox.insert('1.0','<Source Port(s)>')
+		self.SourcePortTextBox.insert('1.0','<Source Port(s)> (a,b,d-f,>g,<h)')
 		self.SourcePortTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.SourcePortTextBox.tag_configure("boldcentered",justify='center',background='white')
 		
@@ -2949,7 +2949,7 @@ class ProgramFlowSpecRuleClass(object):
 		self.DestinationPortTextBox.configure(bg = 'white')
 		self.DestinationPort = ''
 		self.DestinationPortTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
-		self.DestinationPortTextBox.insert('1.0','<Destination Port(s)>')
+		self.DestinationPortTextBox.insert('1.0','<Destination Port(s)> (a,b,d-f,>g,<h)')
 		self.DestinationPortTextBox.tag_add("boldcentered", "1.0", 'end')
 		self.DestinationPortTextBox.tag_configure("boldcentered",justify='center',background='white')
 		
