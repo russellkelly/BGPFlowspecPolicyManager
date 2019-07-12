@@ -512,23 +512,9 @@ def FindAndProgramDdosFlows(SflowQueue,FlowRouteQueueForQuit,FlowRouteQueue,Manu
 				ExabgpAndQueueCalls.ExaBgpWithdraw(str(DataList[0]),str(DataList[1]),str(DataList[2]),str(DataList[3]),str(DataList[5]),str(DataList[6]),FlowActionDict.get(str(DataList)),ExaBGPQueue,CurrentConfiguredSourceProtocolPortList,CurrentConfiguredDestinationProtocolPortList)
 				FlowActionDict.pop(str(DataList),None)
 				ListOfFlows.remove(DataList)
-			
-		#Add new routine to Reconcile IPv4 and IPv6 Flowspec Routes in Routers Vs Whats in ListOfFlows
-		# try:
-		# 	for Router in topo_vars['EdgeRouters']:
-		# 		hostname_list.append(Router)
-		# 	
-		# 	nodes, hostname_list = parse_args()
-		# 	for node in nodes:
-		# 		try:
-		# 			output = node.execute(['enable', 'show bgp flow-spec ipv4'])
-		# 			pp(output)
-		# 		except httplib.IncompleteRead as e:
-		# 			pass
-		# except:
-		# 	pass
 	
 		# Send Lists for Printing in Main tkinter Window
+		
 		try:
 			SflowQueue.get(0)	# Clear the Queue (otherwise it grows HUGE) - Will just send last entry now with put below
 		except:
