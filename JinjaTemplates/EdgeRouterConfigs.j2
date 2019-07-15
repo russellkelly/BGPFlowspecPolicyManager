@@ -31,12 +31,12 @@ hardware tcam
       feature flow-spec port ipv4
          key size limit 160
          key field dscp dst-ip ip-frag ip-protocol l4-dst-port l4-ops l4-src-port src-ip tcp-control
-         action count redirect
+         action redirect set-policer
          packet ipv4 forwarding routed
       !
       feature flow-spec port ipv6
          key field dscp dst-ipv6 ipv6-next-header ipv6-traffic-class l4-dst-port l4-ops-3b l4-src-port src-ipv6 tcp-control
-         action count redirect
+         action redirect set-policer
          packet ipv6 forwarding routed
       !
       feature pbr ip
@@ -77,6 +77,9 @@ neighbor {{FlowspecManagerPublicIP}} update-source {{Router['RouterID']}}
 neighbor {{FlowspecManagerPublicIP}} local-as {{Router['AS']}} no-prepend replace-as
 !
 address-family flow-spec ipv4
+	neighbor {{FlowspecManagerPublicIP}} activate
+   !
+address-family flow-spec ipv6
 	neighbor {{FlowspecManagerPublicIP}} activate
    !
 {%- endfor %}
