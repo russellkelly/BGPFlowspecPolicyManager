@@ -2448,6 +2448,7 @@ class ProgramFlowSpecRuleClass(object):
 		self.selected = tk.IntVar()
 		self.actionselected = tk.IntVar()
 		self.manualroutewindow = tk.Toplevel()
+		self.manualroutewindow.configure(background=BG0)
 		self.ProtocolStringVariable = tk.StringVar()
 		self.PeerIPAddressStringVariable = tk.StringVar()
 		self.ProtocolList = []					# Example Format: ProtocolList = [{'TCP':6},{'UDP':17}]
@@ -2465,15 +2466,15 @@ class ProgramFlowSpecRuleClass(object):
 		self.ProtocolOptionsMenu = tk.OptionMenu(self.manualroutewindow, self.ProtocolStringVariable,*self.ProtocolList)
 		self.PeerIPAddressOptionsMenu = tk.OptionMenu(self.manualroutewindow, self.PeerIPAddressStringVariable,*self.ListOfLERs)
 		self.manualroutewindow.title("Program Manual BGP Flowspec Rule")
-		self.announce = tk.Radiobutton(self.manualroutewindow,text='Announce Rule', value=1, variable=self.selected,font=("Verdana",12))
-		self.withdraw = tk.Radiobutton(self.manualroutewindow,text='Withdraw Rule', value=2, variable=self.selected,font=("Verdana",12))
+		self.announce = tk.Radiobutton(self.manualroutewindow,text='Announce Rule', value=1, variable=self.selected,font=("Verdana",12,'bold'),background=BG0)
+		self.withdraw = tk.Radiobutton(self.manualroutewindow,text='Withdraw Rule', value=2, variable=self.selected,font=("Verdana",12,'bold'), background=BG0)
 		self.announce.grid(column=0,row=0,sticky='w')
 		self.withdraw.grid(column=0,row=1,sticky='w')
 		self.ManualAnnounceWithdrawDummyRad = tk.Radiobutton(self.manualroutewindow, value=5, variable=self.selected)
 		
 		self.PeerIPAddressStringVariable.set("Select BGP FS Peer")
 		self.PeerIPAddressOptionsMenu.grid(row=2,column=1,padx=5)
-		self.PeerIPAddressOptionsMenu.config(width=25,justify='center')
+		self.PeerIPAddressOptionsMenu.config(width=25,justify='center', font=("Verdana",10))
 	
 		self.SourcePrefixTextBox = tk.Text(self.manualroutewindow, background=BG0, height = 1, width = 30, borderwidth=1, relief="ridge")
 		self.SourcePrefixTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
@@ -2499,7 +2500,7 @@ class ProgramFlowSpecRuleClass(object):
 		
 		self.ProtocolStringVariable.set("Select Protocol")
 		self.ProtocolOptionsMenu.grid(row=2,column=4,padx=5)
-		self.ProtocolOptionsMenu.config(width=15,justify='center')
+		self.ProtocolOptionsMenu.config(width=15,justify='center', font=("Verdana",10) )
 		
 		self.SourcePortTextBox = tk.Text(self.manualroutewindow, background=BG0, height = 1, width = 30, borderwidth=1, relief="ridge")
 		self.SourcePortTextBox.configure(font=("Verdana",10,'italic'),fg='dark grey')
@@ -2524,11 +2525,11 @@ class ProgramFlowSpecRuleClass(object):
 		self.DestinationPortTextBox.grid(column=6, row=2, padx=5)
 
 		self.ManualRouteRateLimitTrafficRad = tk.Radiobutton(self.manualroutewindow, background=BG0,value=1, variable=self.actionselected, command=self.InitialManualRouteRateLimitTextBoxFocus)
-		self.ManualRouteRateLimitTrafficRadLabel = tk.Label(self.manualroutewindow,width=12,text='Rate-Limit',font=("Verdana",10),fg='black',background='grey95',relief='ridge')
+		self.ManualRouteRateLimitTrafficRadLabel = tk.Label(self.manualroutewindow,width=12,text='Rate-Limit',font=("Verdana",12),fg='black',background='grey95',relief='ridge')
 		self.ManualRouteRedirectIPRad = tk.Radiobutton(self.manualroutewindow,background=BG0,value=2, variable=self.actionselected, command=self.SetManualRouteAction)
-		self.ManualRouteRedirectIPRadLabel = tk.Label(self.manualroutewindow,width=20,text='Redirect To Next Hop',font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+		self.ManualRouteRedirectIPRadLabel = tk.Label(self.manualroutewindow,width=20,text='Redirect To Next Hop',font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 		self.ManualRouteRedirectVRFRad = tk.Radiobutton(self.manualroutewindow,background=BG0,value=3, variable=self.actionselected, command=self.SetManualRouteAction)
-		self.ManualRouteRedirectVRFRadLabel = tk.Label(self.manualroutewindow,width=20,text='Redirect To VRF',font=("Verdana",10),fg='black',bg='grey95',relief='ridge')
+		self.ManualRouteRedirectVRFRadLabel = tk.Label(self.manualroutewindow,width=20,text='Redirect To VRF',font=("Verdana",12),fg='black',bg='grey95',relief='ridge')
 		self.ManualRouteRateLimitTrafficRad.grid(column=1, row=3,sticky='w',padx=10)
 		self.ManualRouteRedirectIPRad.grid(column=2, row=3, sticky='w',padx=10)
 		self.ManualRouteRedirectVRFRad.grid(column=3, row=3,sticky='w',padx=10)
@@ -2537,7 +2538,7 @@ class ProgramFlowSpecRuleClass(object):
 		self.ManualRouteRedirectVRFRadLabel.grid(column=3, row=3,sticky='w',padx=50)
 		self.ManualRouteDummyRad = tk.Radiobutton(self.manualroutewindow, value=5, variable=self.actionselected)
 		
-		self.SpacerLabel=tk.Label(self.manualroutewindow,text="\n",font=("Verdana", 12),justify='right')
+		self.SpacerLabel=tk.Label(self.manualroutewindow,text="\n",font=("Verdana", 12),justify='right',background=BG0)
 		self.SpacerLabel.grid(column=3, columnspan=7,row=4,sticky='w')		
 		
 		self.ProgramRoute = tk.Button(self.manualroutewindow,text="Program Rule",command=self.callback,font=("Verdana",12,'bold'))
@@ -2546,13 +2547,13 @@ class ProgramFlowSpecRuleClass(object):
 		self.close= tk.Button(self.manualroutewindow,text='Close Window',command=self.cleanup,font=("Verdana",12,'bold'))
 		self.close.grid(row=6,column=0,padx=10,pady=5)
 
-		ClearEntries=tk.Button(self.manualroutewindow, text="Clear Selection",width=25,command=self.ClearAllEntries,font=("Verdana", 12, 'italic'),fg='white',bg='dark grey')
+		ClearEntries=tk.Button(self.manualroutewindow, text="Clear Selection",width=25,command=self.ClearAllEntries,font=("Verdana", 12, 'italic bold'),fg='white',bg='dark grey')
 		ClearEntries.grid(column=1,sticky='w',row=5,padx=10)
 
-		DeleteManualFlowspecRoutes=tk.Button(self.manualroutewindow, text="Delete All Manual Routes",width=25,command=self.DeleteAllManualFlowSpecRoutes,font=("Verdana", 10, 'bold'),fg='white',bg='dark grey')
+		DeleteManualFlowspecRoutes=tk.Button(self.manualroutewindow, text="Delete All Manual Routes",width=25,command=self.DeleteAllManualFlowSpecRoutes,font=("Verdana", 12, 'bold'),fg='white',bg='dark grey')
 		DeleteManualFlowspecRoutes.grid(column=2,sticky='w',row=5,padx=10)
 
-		FlowspecManualRoutes=tk.Button(self.manualroutewindow, text="Show Manual Flowspec Routes Click Here (Pop Up)",width=50,command=self.ShowFlowspecManualRoutesPopup,font=("Verdana", 12, 'bold'),fg='white',bg='dark grey')
+		FlowspecManualRoutes=tk.Button(self.manualroutewindow, text="Show Manual Flowspec Routes Click Here (Pop Up)",width=53,command=self.ShowFlowspecManualRoutesPopup,font=("Verdana", 12, 'bold'),fg='white',bg='dark grey')
 		FlowspecManualRoutes.grid(column=1,columnspan=2,sticky='w',row=6,padx=10)
 		
 		self.ManualRouteRateLimitTextBox = tk.Text(self.manualroutewindow, background=BG0, height = 1, width = 8, borderwidth=1, relief="ridge")
