@@ -31,7 +31,7 @@ def RenderRouterConfiguration():
 	rel_path = "TopologyVariables.yaml"
 	abs_file_path = os.path.join(script_dir, rel_path)
 	file=open(abs_file_path)
-	EdgeRouterVars = yaml.load(file.read())
+	EdgeRouterVars = yaml.load(file.read(), Loader=yaml.FullLoader)
 	EdgeRouterVars['home_directory'] = os.path.dirname(os.path.realpath(__file__))
 	EdgeRouterVars['FlowspecManagerPublicIP'] = FlowspecManagerPublicIP()
 	file.close()
