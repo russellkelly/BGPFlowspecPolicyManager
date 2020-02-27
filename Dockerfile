@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER Russell Kelly (russell@arista.net)
+MAINTAINER Russell Kelly (russell@arrcus.com)
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y apt-utils && apt-get install -y curl
@@ -8,11 +8,8 @@ RUN apt-get update
 RUN apt-get install -qy --no-install-recommends wget python git
 RUN apt-get install -qy openssh-server
 RUN apt-get install -qy openssh-client
-RUN apt-get install -qy python-pip
 RUN apt-get install -qy python3-pip
-RUN apt-get install -qy python-dev
 RUN apt-get install -qy python3-dev
-RUN apt-get install -qy python-flask
 RUN apt-get install -qy python3-flask
 RUN apt-get install -qy libxml2-dev
 RUN apt-get install -qy libxslt-dev
@@ -26,8 +23,10 @@ RUN apt-get install -qy shellinabox
 RUN apt-get install -qy screen
 RUN apt-get install -qy sshpass
 RUN pip3 install --upgrade pip
-RUN pip install --upgrade pip
-RUN pip install pyyaml --upgrade
+RUN pip3 install --upgrade cryptography
+RUN python3 -m easy_install --upgrade pyOpenSSL
+RUN apt-get install -qy python-setuptools
+RUN apt-get install -qy python3-setuptools
 RUN pip3 install pyyaml --upgrade
 RUN apt-get update -y
 RUN apt-get install software-properties-common -y
@@ -35,15 +34,9 @@ RUN apt-get update
 RUN apt-get install -qy default-jre
 RUN echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
 RUN apt-get clean
-RUN pip install flask
-RUN pip3 install flask
-RUN pip install pyeapi
 RUN pip3 install pyeapi
-RUN pip install jsonrpc
 RUN pip3 install jsonrpc
-RUN pip install jsonrpclib
 RUN pip3 install jsonrpclib
-RUN pip install requests
 RUN pip3 install requests
 
 
@@ -86,6 +79,10 @@ EXPOSE 8008
 
 
 COPY ConfigFiles/exabgp.env /usr/local/etc/exabgp/exabgp.env
+COPY Scripts/KillPython.py /home/flowspec/Scripts/KillPython.py
+COPY Scripts/RestartManager.py /home/flowspec/Scripts/RestartManager.py
+COPY Scripts/RestartSflowRTCollector.py /home/flowspec/Scripts/RestartSflowRTCollector.py
+COPY RestartContainerServices.sh /home/flowspec/RestartContainerServices.sh
 
 ENTRYPOINT sudo service ssh restart && bash
 

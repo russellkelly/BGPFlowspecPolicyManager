@@ -17,14 +17,12 @@ def main():
 	command = "sshpass -p {password} ssh -o StrictHostKeyChecking=no {user}@{host} {commands}"
 	os.system(command.format(**data))
 	print ("\n\nStarting Sflow Collector ........\n\n\n")
-	ipflow = {'keys':'agent,ipprotocol,ipsource,or:tcpsourceport:udpsourceport:icmptype,inputifindex,ipdestination,or:tcpdestinationport:udpdestinationport:icmpcode', 'value':'bytes'}
-	intflow = {'keys':'agent,outputifindex,mplslabels','value':'bytes','t':'4','log':True}
+	ipflow = {'keys':'agent,or:ip6nexthdr:ipprotocol,or:ipsource:ip6source,or:tcpsourceport:udpsourceport:icmptype:icmp6type,inputifindex,or:ipdestination:ip6destination,or:tcpdestinationport:udpdestinationport:icmpcode:icmp6code', 'value':'bytes'}
 
 	try:
 		print ("\n\nProgramming Sflow Collector ........\n\n\n")
 		while True:
 			try:
-				r=requests.put('http://%s:8008/flow/%s/json' % (sflowIP,'interface'),data=json.dumps(intflow))
 				r=requests.put('http://%s:8008/flow/%s/json' % (sflowIP,'ipdest'),data=json.dumps(ipflow))
 				False
 				print ("\n\nDone! ........\n\n\n")

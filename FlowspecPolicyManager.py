@@ -50,7 +50,7 @@ rel_path = "TopologyVariables.yaml"
 abs_file_path = os.path.join(script_dir, rel_path)
 file=open(abs_file_path)
 if sys.version_info[0] < 3:
-	topo_vars = yaml.load(file.read())
+	topo_vars = yaml.load(file.read(),Loader=yaml.FullLoader)
 else:
 	topo_vars = yaml.load(file.read(),Loader=yaml.FullLoader)
 topo_vars['home_directory'] = os.path.dirname(os.path.realpath(__file__))
