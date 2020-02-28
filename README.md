@@ -47,7 +47,7 @@ installed.  It also installs all the required dependencies in the docker image
 There are a few dependencies needed on the local PC for the Tkinter GUI to run.  These 
 are covered below.
 
-This Application will run with Python 2.7 or Python 3.
+This Application will run with Python 2.7 or Python 3 (though Python 3 has been less extensively tested).
 
 Install the following packages if running Python 2.7 or 3.x:
 
@@ -183,12 +183,12 @@ flow data etc.
 Option 2:
 ---------
 
-There is an option to restrt the Exabgp and sflow-RT processes by running the script below.  Follow the steps below.
+There is an option to restart the Exabgp and sflow-RT processes from within the container by running the script below.  Follow the steps below.
 
         ssh flowspec@localhost -p 2022      (password is flowspec)
         ./RestartContainerServices.sh
 		
-This can also be executed directly from host machine
+This can also be executed directly from the host machine
 
         docker exec flowspec-container bash /home/flowspec/RestartContainerServices.sh
         
