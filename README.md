@@ -47,19 +47,21 @@ installed.  It also installs all the required dependencies in the docker image
 There are a few dependencies needed on the local PC for the Tkinter GUI to run.  These 
 are covered below.
 
-Install the following packages:
+This Application will run with Python 2.7 or Python 3.
 
-- Python 2.7.15 (https://www.python.org/downloads/release/python-2715/)
+Install the following packages if running Python 2.7 or 3.x:
+
 - Python Requests module
 - Python Pyyaml module
 - Python Schedule Module
 
-The commands to install on Windows (after installing Python 2.7.15) are below:
+The commands to install on Windows (after installing Python 2.7.15 or 3.4) are below:
 
         python -m pip install requests
         python -m pip install pyyaml
         python -m pip install schedule
         python -m pip install win-inet-pton (needed on Windows only)
+
 
 Similar commands can be run in Mac OSX or Linux using brew or apt-get.
 
@@ -70,7 +72,6 @@ EXABGP (version 4.0.10) : https://github.com/Exa-Networks/exabgp.git
 sFlow-RT : https://sflow-rt.com/download.php
 
 
-Note2:  Application will run with Python3 but has not been extensively tested.
 
 CONFIGURING AND RUNNING THE FLOWSPEC MANAGER
 ============================================
@@ -185,10 +186,13 @@ Option 2:
 There is an option to restrt the Exabgp and sflow-RT processes by running the script below.  Follow the steps below.
 
         ssh flowspec@localhost -p 2022      (password is flowspec)
-        cd manager
-        ./RestartManager.sh 
+        ./RestartContainerServices.sh
+		
+This can also be executed directly from host machine
+
+        docker exec flowspec-container bash /home/flowspec/RestartContainerServices.sh
         
-The Manager script will need to be started afterwards.  
+The BGPFlowSpecManager script will need to be started afterwards.  
 
 Option 3 :
 ----------
