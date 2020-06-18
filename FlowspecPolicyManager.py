@@ -1315,7 +1315,6 @@ class FlowspecGUI(ttk.Frame):
 		
 		self.selected = tk.IntVar()
 		ActionRuleLabel=tk.Label(self.window, background=BG0, text="Select the Flow Policy (Required)",font=("Verdana", 10),justify='right',anchor='nw',)
-		ActionRuleLabel.pack()
 		ActionRuleLabel.grid(column=1, row=9,columnspan=3,sticky='nw')
 		
 		# ---------------- ROW-10 ---------------#
@@ -1430,7 +1429,6 @@ class FlowspecGUI(ttk.Frame):
 		# ---------------- ROW-23 ---------------#
 		
 		ProgrammedPolicyLabel=tk.Label(self.window, background=BG0, text="\n",font=("Verdana", 12),justify='right',anchor='nw')
-		ProgrammedPolicyLabel.pack()
 		ProgrammedPolicyLabel.grid(column=1, columnspan=3,row=23,sticky='w')
 		
 		# ---------------- ROW-24 ---------------#
