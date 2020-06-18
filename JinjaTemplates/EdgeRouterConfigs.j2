@@ -72,7 +72,7 @@ sflow destination {{FlowspecManagerPublicIP}}
 sflow source {{Router['RouterID']}}
 
 router bgp {{Router['AS']}}
-neighbor {{FlowspecManagerPublicIP}} remote_as {{Exabgp_as.as}}
+neighbor {{FlowspecManagerPublicIP}} remote-as {{Exabgp_as.as}}
 neighbor {{FlowspecManagerPublicIP}} update-source {{Router['RouterID']}}
 neighbor {{FlowspecManagerPublicIP}} local-as {{Router['AS']}} no-prepend replace-as
 !
